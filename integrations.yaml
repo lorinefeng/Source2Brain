@@ -1,0 +1,51 @@
+schema_version: 1
+verified_on: '2026-09-29'
+integrations:
+  - id: openclaw
+    repo: https://github.com/openclaw/openclaw
+    role: Agent 运行时与内置 memory-core
+    required: true
+    tested_version: '2026.9.6'
+    license: MIT
+  - id: openclaw-weixin
+    repo: https://github.com/Tencent/openclaw-weixin
+    role: 微信输入与回复通道
+    required: true
+    tested_version: '2.4.9'
+    license: MIT
+  - id: agent-reach
+    repo: https://github.com/Panniantong/Agent-Reach
+    role: 互联网能力发现和采集路由
+    required: true
+    tested_version: '1.5.0'
+    license: MIT
+    notes: 两台机器同版本的 doctor 行为不同，必须以真实命令进一步探测
+  - id: opencli
+    repo: https://github.com/jackwener/opencli
+    role: 复用用户浏览器登录态读取小红书
+    required: true
+    tested_version: '1.8.6'
+    license: Apache-2.0
+  - id: funasr
+    repo: https://github.com/modelscope/FunASR
+    role: 本次部署的本地语音转写实现
+    required: false
+    required_for: 无字幕视频必须配置可用的 ASR 实现
+    tested_version: '1.4.16'
+    license: MIT
+    model_license: Apache-2.0
+    models: [speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch, speech_fsmn_vad_zh-cn-16k-common-pytorch, punc_ct-transformer_cn-en-common-vocab471067-large]
+  - id: llama-cpp-provider
+    repo: https://github.com/openclaw/openclaw
+    role: 本次部署的本地语义 embedding 实现
+    required: false
+    required_for: 语义召回必须配置可用的 embedding 实现
+    tested_version: '2026.9.6'
+    runtime_build: b10809-5266f24da
+    license: MIT
+    model: ggml-org/embeddinggemma-300m-qat-q8_0-GGUF
+    model_license: 上游 Gemma 条款，模型权重不随本项目分发
+optional_future:
+  - {id: summarize, repo: 'https://github.com/steipete/summarize', role: 深度媒体扩展, installed_by_this_project: false}
+  - {id: markitdown, repo: 'https://github.com/microsoft/markitdown', role: 文档扩展, installed_by_this_project: false}
+  - {id: karakeep, repo: 'https://github.com/karakeep-app/karakeep', role: 收藏箱扩展, installed_by_this_project: false}

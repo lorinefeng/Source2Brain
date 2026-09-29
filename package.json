@@ -1,0 +1,9 @@
+{
+  "name": "source2brain",
+  "version": "0.1.0",
+  "private": true,
+  "description": "把互联网来源转为可追溯、可召回的 Markdown 知识",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": { "test": "node --test", "check": "node --check scripts/brain.mjs && node --test" }
+}
