@@ -1,0 +1,30 @@
+name: 故障报告
+description: 提交可复现的安装、采集、保存或检索问题
+body:
+  - type: textarea
+    id: environment
+    attributes:
+      label: 环境
+      description: 宿主及版本、操作系统、Node 版本、本机或远程执行
+    validations:
+      required: true
+  - type: dropdown
+    id: stage
+    attributes:
+      label: 出错阶段
+      options:
+        - 安装与 Skill 发现
+        - 采集或转写
+        - media 画面增强
+        - 校验或保存
+        - 检索与引用
+        - 微信通道
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 操作、预期与实际结果
+      description: 提供最小复现步骤和脱敏错误，不要上传密钥、Cookie、签名链接、二维码或私人知识库。
+    validations:
+      required: true

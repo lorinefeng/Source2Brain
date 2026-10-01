@@ -1,5 +1,19 @@
 schema_version: 1
 verified_on: '2026-09-29'
+scope: phase-1-openclaw-weixin-reference-deployment
+required_semantics: required 只描述本次参考部署，不表示母项目要求所有用户安装
+extension_catalog: references/extensions/catalog.yaml
+host_guides: references/hosts/README.md
+additional_host_validation:
+  date: '2026-10-01'
+  host: Hermes Agent
+  repo: https://github.com/NousResearch/hermes-agent
+  cli_version: '0.21.0'
+  checkout: '97f3229dfd'
+  license: MIT
+  scope: Skill 发现、已有知识跨宿主文件检索、合成材料保存与重复保护
+  retrieval: file_keyword
+  report: docs/hermes-validation.md
 integrations:
   - id: openclaw
     repo: https://github.com/openclaw/openclaw
@@ -46,6 +60,13 @@ integrations:
     model: ggml-org/embeddinggemma-300m-qat-q8_0-GGUF
     model_license: 上游 Gemma 条款，模型权重不随本项目分发
 optional_future:
-  - {id: summarize, repo: 'https://github.com/steipete/summarize', role: 深度媒体扩展, installed_by_this_project: false}
   - {id: markitdown, repo: 'https://github.com/microsoft/markitdown', role: 文档扩展, installed_by_this_project: false}
   - {id: karakeep, repo: 'https://github.com/karakeep-app/karakeep', role: 收藏箱扩展, installed_by_this_project: false}
+verified_optional_packs:
+  - id: media
+    install_by_default: false
+    tested_platform: macOS-arm64
+    recipe: references/extensions/media.md
+    projects:
+      - {id: summarize, repo: 'https://github.com/steipete/summarize', tested_version: '0.24.0', license: MIT, role: 本地视频关键帧与时间戳}
+      - {id: tesseract-js, repo: 'https://github.com/naptha/tesseract.js', tested_version: '7.0.0', license: Apache-2.0, role: 本地中英文 OCR}

@@ -1,5 +1,7 @@
 # macOS 安装与排障
 
+本文是 OpenClaw 常驻参考部署。已有 Hermes 请从 [Hermes 接入](../references/hosts/hermes.md) 开始；其他宿主见 [官方资料索引](../references/hosts/README.md)。完整粉丝首次安装与干净重装演示按首发安排在开源之后，本轮不提前卸载现有环境。
+
 ## 已验证布局
 
 | 位置 | 用途 |

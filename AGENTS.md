@@ -4,7 +4,15 @@
 
 ## 项目定位与第一阶段
 
-Source2Brain 是 Agent Skill 和知识协议：小红书链接 → Agent Reach / OpenCLI → SourceArtifact → Markdown → OpenClaw 新会话召回。普通 Markdown 目录是知识的原始存储，Obsidian 仅为可选阅读器。不要在第一阶段增加独立数据库、RAG 服务、笔记 App 或演示动画。
+Source2Brain 是聚合第三方优秀方案的知识编排母项目。核心价值是把开源原子能力索引化，让用户已有的 Agent 根据需求检测、选择、按需安装、调用并验证，再统一为可追溯的知识。基座包括 Source2Brain Skill、能力索引、知识协议、存储与验证，以及 Agent Reach 的互联网采集能力。
+
+“扩展”优先指第三方项目组成的能力包：summarize（视频帧/OCR/媒体）、MarkItDown（文档）、Karakeep（收藏箱）、Anytype MCP（存储）等。必须记录项目的实际职责、前置条件、安装和调用资料、结果映射、限制、版本与实测状态；不能只有 GitHub 链接清单，也不能把全部项目默认装上。索引入口为 `references/extensions/README.md`，机器可读目录为 `references/extensions/catalog.yaml`。
+
+跨 Codex/Claude Code/WorkBuddy/Qoder/Hermes/DeepSeek Harness/OpenClaw 是宿主兼容维度，应服务上述主线，不能取代能力包建设。优先复用宿主和上游已有的模型、检索、媒体处理能力；确有缺口才增加胶水代码。
+
+首发按 `docs/release-scope.md` 执行：基座 + media + OpenClaw/Hermes 限定范围验证；其他宿主只核对官方资料。先完成开源配套发布，再清理 Mini 的本项目演示环境；视频制作前先讨论真人口播、Recordly 录屏和 Remotion 动画。不得提前卸载共享依赖、原知识、模型或浏览器登录态。微信通道按单一绑定规划，切换宿主可能需要本人重新扫码。
+
+已实施的第一阶段配方是：小红书链接 → Agent Reach / OpenCLI → 本地转写 → SourceArtifact → Markdown → OpenClaw 新会话召回。它是参考部署，不是母项目强制依赖图。普通 Markdown 目录是默认知识存储，Obsidian 仅为可选阅读器。不要在第一阶段增加独立数据库、RAG 服务、笔记 App 或演示动画。
 
 ## 开发与运行分工
 
@@ -20,6 +28,7 @@ Source2Brain 是 Agent Skill 和知识协议：小红书链接 → Agent Reach /
 - 作者观点、AI 摘要、模型推断和行动建议分开。作者观点必须附能在提取内容中匹配的引文。
 - 未知作者、发布时间用 `null`，不猜测。视频配文不是视频转写；图文配文不等于完整图片内容。
 - `partial` 仅写入 `Pending/`，检索仅索引 `Sources/`。视频仅转写而无画面时可按第一阶段范围接受，但必须明确标注。
+- 上一条仅是第一阶段的音频覆盖口径。用户要求保留画面、图表或操作演示时，不能继续用音频转写宣称完成；应查询 media 能力包。当前 SourceEnhancement v1 支持对已有来源追加抽样帧/OCR 和时间戳证据，不覆盖旧笔记，不宣称图表关系或动作理解；真实验收以 docs/media-validation.md 为准。
 - 重复 URL 以平台 ID 去重，不覆盖人工编辑；内容改变返回冲突，由用户或后续明确更新流程处理。
 - 单元测试、真实采集、模型整理、索引命中、新会话召回、微信收发是不同验收层级，分别记录；没有证据就不写“E2E 完成”。
 

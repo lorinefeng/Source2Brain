@@ -1,0 +1,111 @@
+schema_version: 1
+reviewed_on: '2026-09-29'
+purpose: 让用户的 Agent 根据能力缺口选择、复用或按需安装第三方项目
+catalog_state: mixed-verified-and-planned
+installation_policy: on-demand-reuse-existing-first
+base:
+  source2brain: [能力索引与路由, 安装调用配方, SourceArtifact, 证据校验, 来源存储与验收]
+  upstream: [agent-reach]
+  reference_capture_backend: opencli
+  host: 用户自己选择并已授权使用的 Agent
+  default_store: markdown
+  verified_scope: OpenClaw 小红书参考配方及 media；Hermes 追加已有知识文件检索与合成材料保存验证，未复测采集或微信
+packs:
+  - id: media
+    project: steipete/summarize
+    repo: https://github.com/steipete/summarize
+    license: MIT
+    composed_projects:
+      - {project: naptha/tesseract.js, version: '7.0.0', license: Apache-2.0, role: 本地中英文 OCR，替代上游会过滤纯中文的 OCR 清理路径}
+    runtime_recipe: media-runtime/package-lock.json
+    provides: [video.frames, video.frame_timestamps, video.ocr]
+    use_when: 需要语音以外的视频画面、课件或图表信息，或现有媒体提取不足
+    reuse_first: [已下载的视频, 现有转写结果, 已有 ffmpeg, 宿主已配置的视觉能力]
+    prerequisites: [Node 24+, 已保存来源的本地 MP4, 固定 media 运行依赖与中英文语言包]
+    install_docs: https://github.com/steipete/summarize/blob/main/docs/install.md
+    call_docs: https://github.com/steipete/summarize/blob/main/docs/commands/slides.md
+    recipe: media.md
+    output_mapping: SourceEnhancement v1 追加帧文件、时间戳、原始 OCR 与精确引用，保留原笔记
+    limitations: [抽到帧不等于理解画面, OCR 不等于图表语义, 抽样可能漏掉动态操作, 不能假设直接支持小红书短链]
+    evidence:
+      upstream_docs_checked: true
+      source2brain_tested_version: '0.24.0'
+      adapter_status: verified-media-recipe
+      tested_platform: macOS-arm64
+      tested_ocr: 'tesseract.js@7.0.0'
+      tested_scope: 已保存小红书视频的抽样帧与中英文 OCR，追加增强，新会话召回
+      acceptance: 两条素材已处理，一条画面新增事实通过回读，另一条保留 Pending
+    install_by_default: false
+  - id: documents
+    project: microsoft/markitdown
+    repo: https://github.com/microsoft/markitdown
+    license: MIT
+    provides: [document.markdown, document.office, document.pdf, document.epub]
+    use_when: 用户需要收藏或解析文档，现有能力不能完整提取
+    reuse_first: [宿主已有文档转换工具, 已安装的 MarkItDown]
+    prerequisites: [兼容的 Python 环境, 按文档类型安装 extras]
+    install_docs: https://github.com/microsoft/markitdown#installation
+    call_docs: https://github.com/microsoft/markitdown
+    output_mapping: 转换正文、原文件信息及覆盖限制进入 SourceArtifact；当前协议仅支持小红书，需扩展
+    limitations: [扫描件和复杂版面需单独核验 OCR, 图表语义可能需要视觉处理, 按需选择 extras 而非默认 all]
+    evidence: {upstream_docs_checked: true, source2brain_tested_version: null, adapter_status: planned}
+    install_by_default: false
+  - id: inbox
+    project: karakeep-app/karakeep
+    repo: https://github.com/karakeep-app/karakeep
+    license: AGPL-3.0
+    provides: [inbox.bookmarks, inbox.browser_capture, inbox.read_later]
+    use_when: 用户明确需要独立收藏箱、浏览器收藏入口或已有 Karakeep 数据
+    reuse_first: [用户现有的 Karakeep 实例]
+    prerequisites: [可用的 Karakeep 服务, 实例授权]
+    install_docs: https://docs.karakeep.app/
+    call_docs: https://docs.karakeep.app/integrations/command-line
+    output_mapping: Inbox 条目和原始 URL 进入来源处理；默认 Markdown 仍为知识存储
+    limitations: [这是额外服务而非轻量必装依赖, 收藏成功不等于 Source2Brain 处理完成]
+    evidence: {upstream_docs_checked: true, source2brain_tested_version: null, adapter_status: planned}
+    install_by_default: false
+  - id: anytype
+    project: anyproto/anytype-mcp
+    repo: https://github.com/anyproto/anytype-mcp
+    license: MIT
+    provides: [storage.objects, storage.search, storage.properties]
+    use_when: 用户明确选择 Anytype 对象式知识库
+    reuse_first: [已授权的 Anytype MCP 与现有空间]
+    prerequisites: [Anytype API 可用, 用户授权及目标空间, SourceArtifact 到对象字段的映射]
+    install_docs: https://github.com/anyproto/anytype-mcp#quick-start
+    call_docs: https://github.com/anyproto/anytype-mcp
+    output_mapping: 来源、证据、作者观点、推断映射到对象及属性；适配实现尚缺
+    limitations: [MIT 指 MCP 项目而非所有 Anytype 组件, 切换存储需另行定义迁移与回读验收]
+    evidence: {upstream_docs_checked: true, source2brain_tested_version: null, adapter_status: planned}
+    install_by_default: false
+  - id: obsidian
+    project: Obsidian
+    project_type: optional-proprietary-reader
+    provides: [knowledge.human_reading, markdown.vault_conventions]
+    use_when: 用户希望用 Obsidian 阅读和编辑知识目录
+    reuse_first: [已有 Markdown 目录与 Vault]
+    prerequisites: [用户选择阅读器]
+    output_mapping: 直接使用 Markdown；不引入另一套后端
+    evidence: {upstream_docs_checked: false, source2brain_tested_version: null, adapter_status: optional-convention}
+    install_by_default: false
+  - id: local-ai
+    project: OpenClaw 官方 llama.cpp provider
+    repo: https://github.com/openclaw/openclaw
+    license: MIT
+    provides: [retrieval.local_embedding]
+    use_when: 用户需要本地语义检索且当前宿主没有可复用实现
+    reuse_first: [宿主现有的检索和 embedding 能力]
+    prerequisites: [匹配宿主的 provider, 按模型上游条款下载权重]
+    recipe: ../openclaw.md
+    output_mapping: 索引 Sources；返回笔记出处；索引可从来源重建
+    limitations: [本条已测实现属于 OpenClaw, 不为使用其他 Agent 而强装 OpenClaw, 权重不随项目分发]
+    evidence: {upstream_docs_checked: true, source2brain_tested_version: '2026.9.6', adapter_status: verified-openclaw-recipe}
+    install_by_default: false
+not_runtime_packs:
+  - {project: Remotion, role: 真实链路完成后的演示内容制作, install_by_default: false}
+not_selected_in_original_plan:
+  - {project: SurfSense, reason: 独立研究与 RAG 产品，当前与母项目及宿主职责重叠}
+  - {project: Khoj, reason: 独立问答与检索产品，当前不作为默认依赖}
+  - {project: AFFiNE, reason: 原对话观察项，尚未选择为存储适配}
+  - {project: Jina Reader, reason: 先复用 Agent Reach 已有网页读取路径，不重复安装}
+  - {project: MediaCrawler, reason: 原对话后续已选 Agent Reach 路线，不引入第二套默认社媒采集}

@@ -9,7 +9,7 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 const parent = await fs.mkdtemp(path.join(os.tmpdir(), 'source2brain-skill-'));
 const output = path.join(parent, 'source2brain');
 await fs.mkdir(output);
-for (const name of ['SKILL.md', 'lib', 'references', 'scripts/brain.mjs', 'scripts/transcribe-local.py']) {
+for (const name of ['SKILL.md', 'LICENSE', 'lib', 'references', 'scripts/brain.mjs', 'scripts/transcribe-local.py', 'scripts/install-media.mjs', 'scripts/media-ocr.mjs']) {
   await fs.mkdir(path.dirname(path.join(output, name)), { recursive: true });
   await fs.cp(path.join(root, name), path.join(output, name), { recursive: true, dereference: false, errorOnExist: true });
 }

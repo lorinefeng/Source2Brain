@@ -7,18 +7,33 @@ import { initStore, saveSource, verifyStore, expandHome } from '../lib/store.mjs
 import { captureXhs } from '../lib/capture.mjs';
 import { validateArtifact, BrainError, requireValue } from '../lib/artifact.mjs';
 import { run, parseJsonOutput } from '../lib/process.mjs';
+import { doctorMedia, enhanceVideo } from '../lib/media.mjs';
+import { saveEnhancement, validateEnhancement } from '../lib/enhancement.mjs';
+import { searchStore } from '../lib/search.mjs';
 
-const help = `Source2Brain 0.1\n\nnode scripts/brain.mjs init --store ~/SecondBrain\nnode scripts/brain.mjs capture --message '收藏 https://xhslink.cn/…' --out /tmp/新采集目录\nnode scripts/brain.mjs transcribe --artifact /path/artifact.json [--from /path/transcript.json]\nnode scripts/brain.mjs validate --artifact /path/artifact.json\nnode scripts/brain.mjs save --artifact /path/artifact.json --store ~/SecondBrain\nnode scripts/brain.mjs verify --store ~/SecondBrain\nnode scripts/brain.mjs doctor\n\n保存不会调用模型。部分采集只进入 Pending，不进入 Sources。\n`;
+const help = `Source2Brain 0.1\n\nnode scripts/brain.mjs init --store ~/SecondBrain\nnode scripts/brain.mjs capture --message '收藏 https://xhslink.cn/…' --out /tmp/新采集目录\nnode scripts/brain.mjs transcribe --artifact /path/artifact.json [--from /path/transcript.json]\nnode scripts/brain.mjs validate --artifact /path/artifact.json\nnode scripts/brain.mjs save --artifact /path/artifact.json --store ~/SecondBrain\nnode scripts/brain.mjs verify --store ~/SecondBrain\nnode scripts/brain.mjs search --store ~/SecondBrain --query '关键词 同义词' [--limit 10]\nnode scripts/brain.mjs doctor\n\n保存不会调用模型。部分采集只进入 Pending，不进入 Sources。\n`;
 
 export async function main(argv = process.argv.slice(2)) {
   const { values, positionals } = parseArgs({ args: argv, allowPositionals: true, options: {
     store: { type: 'string', default: process.env.SOURCE2BRAIN_STORE || '~/SecondBrain' },
-    artifact: { type: 'string' }, message: { type: 'string' }, out: { type: 'string' }, from: { type: 'string' }, help: { type: 'boolean' }
+    artifact: { type: 'string' }, message: { type: 'string' }, out: { type: 'string' }, from: { type: 'string' }, help: { type: 'boolean' },
+    pack: { type: 'string' }, retry: { type: 'boolean', default: false }, query: { type: 'string' }, limit: { type: 'string', default: '10' }
   } });
   const command = positionals[0];
-  if (values.help || !command) return { help };
+  if (values.help || !command) return { help: `${help}\n按需 media 扩展：\nnode scripts/brain.mjs doctor --pack media\nnode scripts/brain.mjs enhance --pack media --artifact /path/artifact.json --out /path/new-output [--retry]\nnode scripts/brain.mjs save-enhancement --artifact /path/enhancement.json --store ~/SecondBrain\n` };
   requireValue(positionals.length === 1, 'INVALID_ARGUMENTS', '命令参数请使用命名选项');
+  if (values.pack) requireValue(values.pack === 'media' && ['doctor', 'enhance'].includes(command), 'UNSUPPORTED_PACK', '当前只有 doctor/enhance 支持 media 包');
+  if (command === 'doctor' && values.pack === 'media') return doctorMedia();
+  if (command === 'enhance') {
+    requireValue(values.pack === 'media' && values.artifact && values.out, 'INVALID_ARGUMENTS', 'enhance 需要 --pack media、--artifact 和 --out');
+    return enhanceVideo(values.artifact, values.out, { retry: values.retry });
+  }
+  if (command === 'save-enhancement') {
+    requireValue(values.artifact, 'INVALID_ARGUMENTS', 'save-enhancement 需要 --artifact');
+    return saveEnhancement(values.store, values.artifact);
+  }
   if (command === 'init') return initStore(values.store);
+  if (command === 'search') return searchStore(values.store, values.query, { limit: Number(values.limit) });
   if (command === 'verify') return verifyStore(values.store);
   if (command === 'capture') {
     requireValue(values.message && values.out, 'INVALID_ARGUMENTS', 'capture 需要 --message 与 --out');
@@ -57,7 +72,9 @@ export async function main(argv = process.argv.slice(2)) {
   if (['save', 'validate'].includes(command)) {
     requireValue(values.artifact, 'INVALID_ARGUMENTS', '需要 --artifact');
     const artifact = JSON.parse(await fs.readFile(expandHome(values.artifact), 'utf8'));
-    if (command === 'validate') return { status: 'valid', ...validateArtifact(artifact), extraction: artifact.extraction.status };
+    if (command === 'validate') return artifact.kind === 'source_enhancement'
+      ? { status: 'valid', ...validateEnhancement(artifact), extraction: artifact.coverage.status }
+      : { status: 'valid', ...validateArtifact(artifact), extraction: artifact.extraction.status };
     return saveSource(values.store, artifact);
   }
   if (command === 'doctor') {
