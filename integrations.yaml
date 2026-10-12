@@ -1,11 +1,13 @@
 schema_version: 1
-verified_on: '2026-09-29'
-scope: phase-1-openclaw-weixin-reference-deployment
+verified_on: '2026-10-07'
+scope: 分层验证，历史OCR、v0.2安装与新默认视觉路线分别记录
+candidate_validation: docs/v0.2-validation.md
 required_semantics: required 只描述本次参考部署，不表示母项目要求所有用户安装
 extension_catalog: references/extensions/catalog.yaml
 host_guides: references/hosts/README.md
 additional_host_validation:
   date: '2026-10-01'
+  historical: true
   host: Hermes Agent
   repo: https://github.com/NousResearch/hermes-agent
   cli_version: '0.21.0'
@@ -14,6 +16,12 @@ additional_host_validation:
   scope: Skill 发现、已有知识跨宿主文件检索、合成材料保存与重复保护
   retrieval: file_keyword
   report: docs/hermes-validation.md
+current_host_validation:
+  date: '2026-10-07'
+  report: docs/v0.2-validation.md
+  openclaw: 独立profile安装复跑与失败恢复、指定空库检查；既有微信绑定完成两条新视频首次保存与本人确认收件，早期接收回执另验
+  hermes: 独立profile完整Skill和真实模型、指定空库只读检查；本轮未验新来源采集或微信
+  workbuddy: 官方接入资料，未实装验收
 integrations:
   - id: openclaw
     repo: https://github.com/openclaw/openclaw
@@ -36,10 +44,11 @@ integrations:
     notes: 两台机器同版本的 doctor 行为不同，必须以真实命令进一步探测
   - id: opencli
     repo: https://github.com/jackwener/opencli
-    role: 复用用户浏览器登录态读取小红书
+    role: 复用执行机器的浏览器登录态；小红书已有适配，抖音单条公开视频由本项目补只读路由
     required: true
     tested_version: '1.8.6'
     license: Apache-2.0
+    validation: 本轮小红书、抖音各一条指定新视频的详情及媒体采集通过；平台登录、内容完整性仍逐条检测
   - id: funasr
     repo: https://github.com/modelscope/FunASR
     role: 本次部署的本地语音转写实现
@@ -48,6 +57,9 @@ integrations:
     tested_version: '1.4.16'
     license: MIT
     model_license: Apache-2.0
+    install_recipe: references/asr/README.md
+    dependency_lock: references/asr/macos-arm64.lock.json
+    validation: macOS arm64 独立安装、复跑及历史视频转写通过；另有本轮两条微信新视频真实转写，ASR未逐字人工校对
     models: [speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch, speech_fsmn_vad_zh-cn-16k-common-pytorch, punc_ct-transformer_cn-en-common-vocab471067-large]
   - id: llama-cpp-provider
     repo: https://github.com/openclaw/openclaw
@@ -66,7 +78,17 @@ verified_optional_packs:
   - id: media
     install_by_default: false
     tested_platform: macOS-arm64
+    checked_on: '2026-10-07'
     recipe: references/extensions/media.md
+    runtime_recipe: references/extensions/media-runtime/package-lock.json
+    default_schema: SourceEnhancement-v2
+    verification_scope: 默认抽帧安装复跑已验证；复用既有1帧的指定视觉工具识读、v2追加保存与独立CLI新会话召回通过，包含维护端核对；新视觉微信链路另验
+    default_runtime: summarize-only
+    automatic_ocr: false
+    visual_model_install_by_default: false
     projects:
       - {id: summarize, repo: 'https://github.com/steipete/summarize', tested_version: '0.24.0', license: MIT, role: 本地视频关键帧与时间戳}
-      - {id: tesseract-js, repo: 'https://github.com/naptha/tesseract.js', tested_version: '7.0.0', license: Apache-2.0, role: 本地中英文 OCR}
+    historical_projects:
+      - {id: tesseract-js, repo: 'https://github.com/naptha/tesseract.js', tested_version: '7.0.0', license: Apache-2.0, role: 旧版OCR证据兼容，默认不安装}
+    historical_report: docs/media-validation.md
+    current_report: docs/v0.2-validation.md

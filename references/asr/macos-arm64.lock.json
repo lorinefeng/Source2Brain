@@ -1,0 +1,233 @@
+{
+  "schema_version": 1,
+  "status": "pinned",
+  "platform": "darwin",
+  "machine": "arm64",
+  "python_minor": "3.11",
+  "packages": {
+    "aliyun-python-sdk-core": "2.16.1",
+    "aliyun-python-sdk-kms": "2.16.5",
+    "annotated-doc": "0.0.5",
+    "antlr4-python3-runtime": "4.9.3",
+    "anyio": "4.15.1",
+    "audioread": "3.1.0",
+    "av": "15.1.0",
+    "certifi": "2026.7.22",
+    "cffi": "2.1.1",
+    "charset-normalizer": "3.5.2",
+    "click": "8.5.0",
+    "cloudpickle": "3.1.2",
+    "crcmod": "1.7",
+    "cryptography": "50.0.2",
+    "decorator": "5.3.1",
+    "filelock": "4.0.12",
+    "fsspec": "2026.9.0",
+    "funasr": "1.4.16",
+    "h11": "0.16.0",
+    "hf-xet": "1.7.0",
+    "httpcore": "1.0.9",
+    "httpx": "0.28.1",
+    "huggingface_hub": "1.33.0",
+    "hydra-core": "1.3.7",
+    "idna": "3.20",
+    "jaconv": "0.5.0",
+    "jamo": "0.4.1",
+    "jieba": "0.42.1",
+    "Jinja2": "3.1.6",
+    "jmespath": "1.1.0",
+    "joblib": "1.6.0",
+    "kaldiio": "2.18.1",
+    "lazy-loader": "0.6",
+    "librosa": "0.11.0",
+    "llvmlite": "0.50.0",
+    "markdown-it-py": "4.2.0",
+    "MarkupSafe": "3.0.4",
+    "mdurl": "0.1.2",
+    "modelscope": "1.37.1",
+    "mpmath": "1.3.0",
+    "msgpack": "1.2.3",
+    "narwhals": "2.26.0",
+    "networkx": "3.6.1",
+    "numba": "0.68.0",
+    "numpy": "2.4.6",
+    "omegaconf": "2.3.1",
+    "oss2": "2.19.1",
+    "packaging": "26.3",
+    "platformdirs": "4.12.3",
+    "pooch": "1.9.0",
+    "protobuf": "7.36.2",
+    "pycparser": "3.0",
+    "pycryptodome": "3.24.0",
+    "Pygments": "2.21.0",
+    "pynndescent": "0.6.0",
+    "PyYAML": "6.0.3",
+    "RapidFuzz": "3.14.6",
+    "regex": "2026.9.29",
+    "requests": "2.34.2",
+    "rich": "15.0.0",
+    "safetensors": "0.8.0",
+    "scikit-learn": "1.9.1",
+    "scipy": "1.17.1",
+    "sentencepiece": "0.2.2",
+    "shellingham": "1.5.4",
+    "six": "1.17.0",
+    "soundfile": "0.14.0",
+    "soxr": "1.1.0",
+    "sympy": "1.14.0",
+    "tensorboardX": "2.6.5",
+    "threadpoolctl": "3.7.0",
+    "tiktoken": "0.14.0",
+    "tokenizers": "0.23.2",
+    "torch": "2.8.0",
+    "torch-complex": "0.4.4",
+    "torchaudio": "2.8.0",
+    "tqdm": "4.70.1",
+    "transformers": "5.19.0",
+    "typer": "0.27.3",
+    "typing_extensions": "4.16.0",
+    "umap-learn": "0.5.12",
+    "urllib3": "2.8.0",
+    "websockets": "17.2"
+  },
+  "models": [
+    {
+      "id": "iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch",
+      "revision": "0141367fdc9b6ba58b0442ef34bceb56a6c1789c",
+      "required_files": [
+        "am.mvn",
+        "config.yaml",
+        "configuration.json",
+        "model.pt",
+        "seg_dict",
+        "tokens.json"
+      ],
+      "sha256": {
+        "am.mvn": "29b3c740a2c0cfc6b308126d31d7f265fa2be74f3bb095cd2f143ea970896ae5",
+        "config.yaml": "6602efa95e4c7248e1d1030f7ff454a3c9af0f57c335ed87f35260cd7faec35d",
+        "configuration.json": "1acac324430b5a4680ef5ee2947575443ab2039a92c8a0551665f6bc9a606b41",
+        "model.pt": "3d491689244ec5dfbf9170ef3827c358aa10f1f20e42a7c59e15e688647946d1",
+        "seg_dict": "59a2ef803a3f1648ad03a2e1480db1c1ee0c0d7dc4ef4dbd16cea33944329022",
+        "tokens.json": "2b20c2b12572d682afff84ce1c8d560f67b8b32a4c1f21567411d141ed352127"
+      },
+      "files": {
+        "am.mvn": {
+          "bytes": 11203,
+          "sha256": "29b3c740a2c0cfc6b308126d31d7f265fa2be74f3bb095cd2f143ea970896ae5"
+        },
+        "config.yaml": {
+          "bytes": 3477,
+          "sha256": "6602efa95e4c7248e1d1030f7ff454a3c9af0f57c335ed87f35260cd7faec35d"
+        },
+        "configuration.json": {
+          "bytes": 478,
+          "sha256": "1acac324430b5a4680ef5ee2947575443ab2039a92c8a0551665f6bc9a606b41"
+        },
+        "model.pt": {
+          "bytes": 989763045,
+          "sha256": "3d491689244ec5dfbf9170ef3827c358aa10f1f20e42a7c59e15e688647946d1"
+        },
+        "seg_dict": {
+          "bytes": 8287834,
+          "sha256": "59a2ef803a3f1648ad03a2e1480db1c1ee0c0d7dc4ef4dbd16cea33944329022"
+        },
+        "tokens.json": {
+          "bytes": 93676,
+          "sha256": "2b20c2b12572d682afff84ce1c8d560f67b8b32a4c1f21567411d141ed352127"
+        }
+      }
+    },
+    {
+      "id": "iic/speech_fsmn_vad_zh-cn-16k-common-pytorch",
+      "revision": "f9a8b8274674755d925277e27063869038d41515",
+      "required_files": [
+        "am.mvn",
+        "config.yaml",
+        "configuration.json",
+        "model.pt"
+      ],
+      "sha256": {
+        "am.mvn": "6820fef9687708c4fc3fab2530179c8fcea6262daa25514380056cd8f6eb1754",
+        "config.yaml": "486861ca26ddb79081663b6179cb204c6bfae71c52f04aafc48a9e9d8dde1e93",
+        "configuration.json": "7bce8867e37d55c3dd8f672695ced18077a2be199ea529a5d432d5350fc0acba",
+        "model.pt": "b3be75be477f0780277f3bae0fe489f48718f585f3a6e45d7dd1fbb1a4255fc5"
+      },
+      "files": {
+        "am.mvn": {
+          "bytes": 8040,
+          "sha256": "6820fef9687708c4fc3fab2530179c8fcea6262daa25514380056cd8f6eb1754"
+        },
+        "config.yaml": {
+          "bytes": 1215,
+          "sha256": "486861ca26ddb79081663b6179cb204c6bfae71c52f04aafc48a9e9d8dde1e93"
+        },
+        "configuration.json": {
+          "bytes": 365,
+          "sha256": "7bce8867e37d55c3dd8f672695ced18077a2be199ea529a5d432d5350fc0acba"
+        },
+        "model.pt": {
+          "bytes": 1721366,
+          "sha256": "b3be75be477f0780277f3bae0fe489f48718f585f3a6e45d7dd1fbb1a4255fc5"
+        }
+      }
+    },
+    {
+      "id": "iic/punc_ct-transformer_cn-en-common-vocab471067-large",
+      "revision": "45ab6961ad58a973ce7785401b4e93a0aab907a3",
+      "required_files": [
+        "config.yaml",
+        "configuration.json",
+        "jieba.c.dict",
+        "jieba_usr_dict",
+        "model.pt",
+        "tokens.json"
+      ],
+      "sha256": {
+        "config.yaml": "c5ffb25cd063ed366cb26283908dca05a08ecfef8e90bef1d498ef9ffacd7552",
+        "configuration.json": "7043245e6264cea789404e498a6f55a330a18585a4690d35dfe71741e6982237",
+        "jieba.c.dict": "eb0a68f8bfa65e6956d59e8f9652b49f5c91952273e24737bc9a8c5e23055221",
+        "jieba_usr_dict": "059aa2af152734d5fd011a4d69cbab171f62347074db0db5157c17b5649010f5",
+        "model.pt": "7176cae922a872e130e6b88aef9a1153581711baf79c9124c7c95be383cd6f81",
+        "tokens.json": "89951fe0669380ed33298ee048c4a2b0ebcaaf6ee8f332d85c281c41d0f38392"
+      },
+      "files": {
+        "config.yaml": {
+          "bytes": 812,
+          "sha256": "c5ffb25cd063ed366cb26283908dca05a08ecfef8e90bef1d498ef9ffacd7552"
+        },
+        "configuration.json": {
+          "bytes": 450,
+          "sha256": "7043245e6264cea789404e498a6f55a330a18585a4690d35dfe71741e6982237"
+        },
+        "jieba.c.dict": {
+          "bytes": 41536866,
+          "sha256": "eb0a68f8bfa65e6956d59e8f9652b49f5c91952273e24737bc9a8c5e23055221"
+        },
+        "jieba_usr_dict": {
+          "bytes": 11280857,
+          "sha256": "059aa2af152734d5fd011a4d69cbab171f62347074db0db5157c17b5649010f5"
+        },
+        "model.pt": {
+          "bytes": 1125507622,
+          "sha256": "7176cae922a872e130e6b88aef9a1153581711baf79c9124c7c95be383cd6f81"
+        },
+        "tokens.json": {
+          "bytes": 8280697,
+          "sha256": "89951fe0669380ed33298ee048c4a2b0ebcaaf6ee8f332d85c281c41d0f38392"
+        }
+      }
+    }
+  ],
+  "note": "83 项运行依赖与3项安装/构建工具锁定版本及分发文件SHA256；三个模型锁定官方提交与16个推理文件SHA256。实际Python3.11安装和转写验收独立记录。",
+  "verified_at": "2026-10-07",
+  "runtime_validation": "pending_python311_clean_install",
+  "model_metadata_source": "https://modelscope.cn/api/v1/models/{id}/repo/files?Revision={revision}&Recursive=true",
+  "requirements_file": "requirements-macos-arm64-py311.txt",
+  "requirements_sha256": "51c2d7f29f634bb88fc669b1c6f31fe56bbfa60c20fa8261dbfc7e0c13e9ecb4",
+  "build_tools": {
+    "pip": "24.0",
+    "setuptools": "79.0.1",
+    "wheel": "0.45.1"
+  },
+  "build_requirements_file": "build-tools-py311.txt",
+  "build_requirements_sha256": "e713b60c1f08f4e5465d1fde8103f72e3fa2d84bf5792e67cd29ec49ac9a520b"
+}

@@ -1,13 +1,10 @@
 {
   "name": "source2brain-media-runtime",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
-  "description": "按需安装的媒体能力组合，不属于基础运行依赖",
+  "description": "按需安装的抽帧运行目录；视觉识读复用宿主或用户指定工具",
   "engines": { "node": ">=24" },
   "dependencies": {
-    "@steipete/summarize": "0.24.0",
-    "tesseract.js": "7.0.0",
-    "@tesseract.js-data/chi_sim": "1.0.0",
-    "@tesseract.js-data/eng": "1.0.0"
+    "@steipete/summarize": "0.24.0"
   }
 }

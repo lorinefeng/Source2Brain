@@ -22,12 +22,12 @@ export async function installMedia(runtime = mediaRuntime(), { runner = run, che
   try {
     await fs.mkdir(stage, { mode: 0o700 });
     for (const name of ['package.json', 'package-lock.json']) await fs.copyFile(path.join(recipeDirectory, name), path.join(stage, name), fs.constants.COPYFILE_EXCL);
-    // 仅安装固定锁文件；不修改全局 npm、Homebrew 或宿主模型配置。
+    // 固定锁只含抽帧工具及其依赖，不安装 OCR 语言包或任何视觉模型。
     await runner(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['ci', '--ignore-scripts', '--no-audit', '--no-fund'], { cwd: stage, timeout: 1_200_000 });
     const ready = await checkRuntime(stage);
     requireValue(ready.ready, 'MEDIA_INSTALL_INCOMPLETE', 'media 依赖安装后检查未通过，原运行目录已保留');
     const packages = JSON.parse(await fs.readFile(path.join(stage, 'package-lock.json'), 'utf8')).packages;
-    await fs.writeFile(path.join(stage, 'install-receipt.json'), `${JSON.stringify({ schema_version: 1, installed_at: new Date().toISOString(), platform: process.platform, arch: process.arch, node: process.versions.node, lock_sha256: ready.runtime_lock_sha256, packages: Object.fromEntries(Object.entries(packages).filter(([name]) => name).map(([name, pkg]) => [name, { version: pkg.version, integrity: pkg.integrity || null }])) }, null, 2)}\n`, { mode: 0o600, flag: 'wx' });
+    await fs.writeFile(path.join(stage, 'install-receipt.json'), `${JSON.stringify({ schema_version: 2, mode: 'frames-only', automatic_ocr: false, vision_status: 'not_probed', installed_at: new Date().toISOString(), platform: process.platform, arch: process.arch, node: process.versions.node, lock_sha256: ready.runtime_lock_sha256, packages: Object.fromEntries(Object.entries(packages).filter(([name]) => name).map(([name, pkg]) => [name, { version: pkg.version, integrity: pkg.integrity || null }])) }, null, 2)}\n`, { mode: 0o600, flag: 'wx' });
     if (await fs.lstat(runtime).catch(e => { if (e.code === 'ENOENT') return null; throw e; })) {
       await realDirectory(runtime);
       backup = `${runtime}.backup-${Date.now()}-${randomUUID().slice(0, 8)}`;

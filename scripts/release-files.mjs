@@ -5,6 +5,8 @@ export const releaseRoots = ['AGENTS.md', 'README.md', 'SKILL.md', 'LICENSE', 'C
 export async function releaseFiles(root) {
   const files = [];
   const visit = async rel => {
+    // 创作工程与私有取材记录独立交付；用户运行包只含知识处理和安装配方。
+    if (['docs/video-production.md', 'docs/video-validation.md'].includes(rel)) return;
     if (/(^|\/)(\.local|\.git|node_modules|__pycache__|\.DS_Store)(\/|$)|\.(pyc|tgz)$/.test(rel)) return;
     const stat = await fs.lstat(path.join(root, rel));
     if (stat.isSymbolicLink()) throw new Error(`公开包不允许符号链接：${rel}`);

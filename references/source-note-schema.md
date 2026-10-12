@@ -44,6 +44,8 @@ JSON 是适配器与 Markdown writer 之间的唯一协议。运行时校验器�
 
 `source.url` 保存解析后的 URL，writer 归一为无跟踪参数的原始出处；`original_url` 保留用户实际发送的链接。`published_at` 不应使用采集日期代替。
 
+候选版增加 `platform: "douyin"` 的单条视频来源：标准链接为 `https://www.douyin.com/video/<数字ID>`，官方 `v.douyin.com` 分享短链先在浏览器解析。小红书继续使用 `xhs-<24位ID>`，抖音使用独立 `dy-<数字ID>` 目录；原分享链接与最终来源必须同平台，若原链接已有 ID 则必须一致。已有小红书 ID、内容哈希、目录和增强引用不变。抖音图集、直播、用户主页不在此配方范围。
+
 `content.type` 为 `post` 或 `video`。各覆盖字段为 `complete`、`missing`、`not_applicable`。只有确认没有图片的纯文字帖，才可将 visuals 设为 not_applicable。视频无画面可以按第一阶段约定完成，但须在 limitations 中明确“只覆盖音频，不包含画面”。转写是 ASR 结果，不等同于作者校对稿。
 
 `claims[].evidence` 的 `field` 只能是 text、transcript、visual_notes，quote 必须逐字匹配对应内容。算法校验只保证有匹配引文，不能证明总结语义正确，仍需 Agent 审阅。`insights` 是模型推断，`actions` 是尚未执行的建议。

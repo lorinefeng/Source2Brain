@@ -1,148 +1,109 @@
-# macOS 安装与排障
+# 安装与排障
 
-本文是 OpenClaw 常驻参考部署。已有 Hermes 请从 [Hermes 接入](../references/hosts/hermes.md) 开始；其他宿主见 [官方资料索引](../references/hosts/README.md)。完整粉丝首次安装与干净重装演示按首发安排在开源之后，本轮不提前卸载现有环境。
+本页随 v0.2.0 完整 Skill 包交付。真实验证范围以 [验证矩阵](v0.2-validation.md) 为准，主要运行实测环境为 macOS arm64。选择下面一条入口，安装过程由已有 Agent 执行；平台登录、模型授权和微信扫码仍由本人完成。
 
-## 已验证布局
+## 两条入口
 
-| 位置 | 用途 |
-| --- | --- |
-| 项目目录 | 源码、测试、Skill 与安装记录 |
-| `~/.local/share/source2brain/runtime/` | 独立 Node、OpenClaw |
-| `~/.openclaw-source2brain/` | profile 配置、认证、本地索引 |
-| `~/.local/share/source2brain/workspace/` | 运行 Agent 的指令与 Skill |
-| `~/.local/share/source2brain/captures/` | 私有原始采集、媒体、转写 |
-| `~/SecondBrain/Sources/` | 成功来源，进入检索 |
-| `~/SecondBrain/Pending/` | 缺失材料，不进入检索 |
+| 需求 | 路线 | 需要安装什么 |
+| --- | --- | --- |
+| 在现有 Agent 里收藏、检索 | [Hermes](../references/hosts/hermes.md)、[OpenClaw](../references/openclaw.md)、[WorkBuddy](../references/hosts/workbuddy.md) | 完整 Source2Brain Skill；按实际需求补 Node、采集、ASR 或 media |
+| 手机微信发链接，电脑常驻处理 | [微信常驻配方](wechat-recipe.md) | 独立 OpenClaw profile 和腾讯微信插件；复用已有环境和绑定 |
 
-首阶段实测 Apple Silicon / macOS。Intel 路径在引导脚本中保留，但尚未实机验证。机器需要保持登录桌面，OpenCLI 依赖浏览器桥接；仅启动 SSH 不等于浏览器已就绪。
+不要仅复制 SKILL.md。发行包中的 `scripts/`、`lib/`、`references/`、安装文档和模板必须保持相对位置。下载实际发布版本的完整 Skill 包并核验 SHA256SUMS；候选包不能冒充已公开发布的版本。
 
-## 1. 独立运行时
+源码和解包后的完整 Skill 均可执行：
 
 ```sh
-bash scripts/bootstrap-macos.sh
-bash scripts/openclaw.sh --version
+node scripts/brain.mjs --help
+node scripts/package-skill.mjs
 ```
 
-Node 26.8.2 从官方发行站下载并校验 SHA-256，OpenClaw 固定为 2026.9.6，profile 固定为 source2brain。脚本不使用 `sudo`，不替换系统 Node。
+基础 CLI 需要 Node 22+，media 与本项目常驻配方使用 Node 24+。Skill 打包、安装和 doctor 不会自动下载全部扩展。
 
-引导脚本首次安装 Skill；重复执行会先备份现有 Skill，再安装本仓库版本。需要单独更新时，先备份 workspace 的 Skill，再重新打包安装：
+## 可以直接交给 Agent 的提示
 
-```sh
-# 需使用已安装的 Node，或把其 bin 目录加入 PATH。
-skill_dir=$(node scripts/package-skill.mjs)
-bash scripts/openclaw.sh skills install "$skill_dir" --as source2brain --force
-```
+> 请阅读 Source2Brain 的 README、SKILL.md 和当前宿主接入说明，安装完整 Skill。先确认实际执行电脑，检查并复用现有模型、Node、浏览器采集和本地转写能力，只按需求安装缺失部分。知识默认保存在 ~/SecondBrain，也可使用我明确指定的目录。不要修改其他 Agent 的模型、密钥、默认 profile 或知识库。平台登录由我在执行电脑的浏览器完成。安装后用一条真实链接验证保存，再开独立新会话查回来源；逐项说明成功和缺失。若我选择微信入口，再执行独立 OpenClaw 常驻配方。
 
-打包器只携带运行所需文件，不复制 `.git/`、`.local/`、密钥、二维码或验收样本。
+## 1. 检测运行环境
 
-## 2. 对话模型
-
-已有 Hermes 配置时，仅在运行主机导入明确选定的 provider，使用装有 PyYAML 的 Python：
+确认 Agent 的执行机器、桌面会话、Node/Python 路径与知识目录。SSH 的 PATH 可能不同，不要因找不到命令就重装整个环境。
 
 ```sh
-python scripts/configure-openclaw.py \
-  --from-hermes ~/.hermes/config.yaml \
-  --provider PROVIDER_NAME \
-  --model MODEL_ID
-```
-
-没有 Hermes 时，通过本机环境变量提供密钥，使用 `--base-url`、`--provider`、`--model` 和 `--key-env`。不要把真实密钥写入命令或聊天。脚本将其放入权限 0600 的 profile `.env`，调用官方 `config patch` 写入配置，并事先备份现有文件。
-
-当前配置器面向 OpenAI Chat Completions 兼容服务，保守使用 128K 上下文与 8192 输出上限；其他模型的能力需单独核验。只有真实请求返回后才能称为模型连通。
-
-## 3. Agent Reach 与浏览器
-
-安装遵循 [Agent Reach 上游指南](https://github.com/Panniantong/Agent-Reach)。已有安装先复用，不要重复安装所有平台工具。本项目当前适配 OpenCLI。
-
-```sh
+node --version
 agent-reach doctor --json
 opencli --version
+python3 scripts/install-asr.py --check
+node scripts/brain.mjs doctor --pack media
 ```
 
-在运行主机打开 Chrome，安装或连接 OpenCLI 浏览器桥接，并登录小红书。新版 doctor 可能只报告 `warn` / 桥接已连接，这是要求实际读取验证，不代表未安装或登录失败。
+ASR 检测读取 `SOURCE2BRAIN_ASR_PYTHON` 和 `SOURCE2BRAIN_ASR_MODEL_ROOT`；未设置 Python 就报告缺失，不猜测哪个共享环境可以修改。每一层分别验证：命令存在、桥接可用、实际平台读取、完整媒体、真实转写、保存、检索、消息送达。
 
-先用一个真实短链验证：
+## 2. 平台账号与浏览器
+
+按 [Agent Reach 上游安装指南](https://github.com/Panniantong/Agent-Reach/blob/main/docs/install.md) 与 [OpenCLI 官方说明](https://github.com/jackwener/opencli) 检查并配置。已有工具先复用；实际采集支持范围以 [采集路由](../references/routing.md) 为准。
+
+在运行 Agent 的电脑上保持可用 Chrome 桌面会话和 OpenCLI 浏览器桥接，在该浏览器登录小红书、抖音等实际要读取的平台。建议使用自己的专用小号，减少工作账号与自动化操作混用。OpenCLI 是复用浏览器登录的工具，不是平台账号；无需把 Cookie、二维码授权或密码贴进聊天。
+
+体检中的桥接 `warn` 不等于失败，也不等于平台已登录。用用户给出的公开链接进行一次只读采集才证明访问可用。登录失效或验证码出现时请本人在浏览器处理，不能通过更换用户凭据或绕过风控伪造成功。
 
 ```sh
 node scripts/brain.mjs capture \
-  --message '用户完整的小红书分享文本' \
+  --message '用户完整分享文本' \
   --out "$HOME/.local/share/source2brain/captures/first-check"
 ```
 
-输出目录必须是新的。捕获成功仍为 `partial`，直到媒体被处理、摘要经证据约束生成后才能入库。
+输出目录必须新建。初始 artifact 为 partial，不能仅凭标题、配文或下载成功标为收藏完成。
 
-## 4. 复用本地中文转写
+## 3. 视频口播转文字
 
-本次使用已有的 FunASR Python 环境及 ModelScope 缓存，没有另装 Whisper。实测版本：FunASR 1.4.16、PyTorch 2.8.0、PyAV 15.1.0。首次搭建者需自行按 FunASR 上游安装兼容环境和模型，首阶段引导脚本尚不自动安装这部分。
-
-默认从 `~/.cache/modelscope/hub/models/iic/` 读取以下三个目录：
-
-- `speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch`
-- `speech_fsmn_vad_zh-cn-16k-common-pytorch`
-- `punc_ct-transformer_cn-en-common-vocab471067-large`
-
-在运行端 profile 的 `.env` 配置 `SOURCE2BRAIN_ASR_PYTHON=/绝对路径/venv/bin/python`。脚本使用 PyAV 从视频提取 16kHz 单声道音频，CPU 转写；不会自动下载或上传模型/媒体。
+使用 [本地 ASR 固定配方](../references/asr/README.md)。它沿用 FunASR/Paraformer，不要求用户改用另一模型；已有可用环境只读复用，新环境进入独立目录。
 
 ```sh
-node scripts/brain.mjs transcribe --artifact /采集目录/artifact.json
+python3 scripts/install-asr.py --check \
+  --reuse-python '/已有环境/bin/python' \
+  --model-root '/已有模型/iic'
 ```
 
-它输出 `artifact-transcribed.json`，仍需 LLM 生成摘要与证据，并将合格来源标记 complete。也可用 `--from /已有转写.json` 复用结果。
+返回包导入与模型文件检查，不等于真实转写。明确需要视频整理、确认缺失后再按 ASR 页执行 `--install`；推理过程中不自动下载模型或上传媒体。
 
-Agent Reach 的默认转写服务是 Groq/OpenAI；对话中转站的密钥不能直接拿去调用这些供应商。其他 ASR 后端是后续扩展接口。
-
-## 5. 本地语义检索
-
-本次使用 OpenClaw 官方 llama.cpp provider、EmbeddingGemma 300M Q8，约 0.3GB。
+将输出的 Python 和模型根目录配置到宿主环境：
 
 ```sh
-bash scripts/openclaw.sh plugins install @openclaw/llama-cpp-provider@2026.9.6
-bash scripts/openclaw.sh config set memory.search.provider local
-bash scripts/openclaw.sh models auth login --provider llama-cpp --method local
+export SOURCE2BRAIN_ASR_PYTHON='/实际运行环境/bin/python'
+export SOURCE2BRAIN_ASR_MODEL_ROOT='/实际模型根目录/iic'
+node scripts/brain.mjs transcribe --artifact '/采集目录/artifact.json'
 ```
 
-在交互设置里仅选择 embedding：如果出现大语言模型下载选项，跳过聊天模型，然后选择仅下载 embedding。它不会替换已配置的聊天模型。
+输出 `artifact-transcribed.json`，仍需 Agent 根据真实转写整理摘要、逐字引文和限制。转写失败不使用配文冒充口播。既有转写可以用 `--from` 复用。
+
+## 4. 视频画面与存储
+
+普通 Skill 安装不附带 media。选择微信视频整理配方或明确要求画面信息时，按 [media 配方](../references/extensions/media.md) 先检测、按需安装、抽取视频帧，再调用宿主实际可用的多模态能力。推荐原生多模态 Agent 作为常驻资源链接整理模型；文本主模型可接用户明确指定的视觉工具，模型及密钥仅放运行端私有配置。默认不安装 Tesseract、OCR 语言包或 VLM 权重。当前覆盖是抽样帧视觉识读，不是全片理解。图文笔记仍需读取全部图片，不能用视频抽帧流程替代。
+
+成功来源保存在 `~/SecondBrain/Sources`，缺失材料进入 `Pending`。增强结果只追加到独立子目录，原笔记和人工修改保持不变。只索引 Sources，不把 Pending 放入宿主检索。
+
+## 5. 宿主回读与验收
+
+OpenClaw 使用配置好的 memory 搜索；没有可用 embedding 时明确为关键词检索。Hermes 等已有本地命令能力的宿主可以直接文件检索，不强制安装独立 RAG 服务。
 
 ```sh
-bash scripts/openclaw.sh memory status --deep
-bash scripts/openclaw.sh memory index --force
-bash scripts/openclaw.sh memory search '笔记主题'
+node scripts/brain.mjs search --store "$HOME/SecondBrain" --query '主题 关键词'
+node scripts/brain.mjs verify --store "$HOME/SecondBrain"
 ```
 
-只有 `embeddingProbe.ok=true` 与实际命中才能证明这部分可用。`provider=none` 是关键词模式，不是语义检索。知识库的额外索引路径只添加 `~/SecondBrain/Sources`，不添加 Pending 或调试资料；OpenClaw 自身的 workspace memory 仍按其默认规则参与索引。
+独立新会话只给自然语言问题，确认 Agent 实际搜索并读取正确来源。视频画面事实应同时返回原链接、帧路径和时间。只有当前会话记得答案不算召回通过；CLI 成功不算微信送达通过。
 
-## 6. 微信与常驻服务
+## 排障与恢复
 
-```sh
-bash scripts/openclaw.sh plugins install @tencent-weixin/openclaw-weixin@2.4.9
-bash scripts/openclaw.sh channels login --channel openclaw-weixin
-```
-
-本人在微信扫码确认。二维码会过期，应使用当前登录命令刷新的二维码；仅展示旧图片不会恢复有效期。不要直接复用另一个正在轮询的 Agent 的微信 token。
-
-将 `templates/workspace/` 中的中文指令安装到独立 workspace；替换已有文件前先备份。它使直接发送链接被视为收藏请求，并声明来源不可信、原文证据和私有资料边界。
-
-```sh
-bash scripts/openclaw.sh config validate
-bash scripts/openclaw.sh gateway install --port 19291
-bash scripts/openclaw.sh gateway start
-bash scripts/openclaw.sh health --json
-```
-
-此处使用用户级 LaunchAgent，保持 Mac mini 登录桌面和正常联网。OpenCLI 需要可用的浏览器会话，因此不能把“服务已运行”当作“整条采集链随时可用”。
-
-验收时先发一个链接；收到保存回复后发 `/new`，再用自己的话询问内容，不粘贴原链接或答案。保存、召回和微信回复应分别核对。
-
-## 实测问题与处理
-
-| 现象 | 已验证处理 |
+| 现象 | 处理 |
 | --- | --- |
-| SSH 找不到 node / agent-reach，桌面能用 | 非交互 PATH 不同；使用项目 wrapper 加入独立运行时、`~/.local/bin` 和 `/usr/local/bin` |
-| 短链 curl/HEAD 404 或超时，浏览器可打开 | 在独立 OpenCLI 浏览器 session 中解析跳转，不直接判定笔记删除 |
-| OpenCLI `Navigation rejected` | 笔记和下载命令使用 `--site-session ephemeral`，避免残留会话导航冲突 |
-| 上游 note 的 title 返回“手机号登录” | 使用实际笔记页 document title；拒绝把登录界面名称当笔记标题 |
-| config patch 拒绝 auto-managed meta | 只传本项目负责的最小 patch，不把读取到的整个配置再写回 |
-| Skill 已存在，安装失败 | 明确使用更新流程和 `--force`，先备份；不要悄悄覆盖其他 Skill |
-| 微信登录完成但提示 gateway 不可达 | 认证与进程是两步，启动独立 profile Gateway 后查看 health 与实际消息回执 |
+| 桌面可用、Agent 找不到命令 | 在实际执行工具检查 PATH，使用探测到的绝对路径 |
+| Node 已有但版本不足 | 保留原安装；只在项目独立 runtime 安装固定版本 |
+| profile 的 workspace 不一致 | 读取真实配置，显式设置 SOURCE2BRAIN_WORKSPACE；不把安装默默转向另一个 Agent |
+| 短链 HTTP 请求失败但浏览器能开 | 用 OpenCLI 已登录浏览器解析，不直接判定来源删除 |
+| 登录页被当作标题 | 停止摘要，报告平台登录失效 |
+| ASR 包可导入但无结果 | 核对模型文件、音轨及真实样本；包检查和转写验收分别记录 |
+| Skill 更新失败 | 恢复 skills 之外的备份；保留知识、模型和浏览器登录 |
+| 内容保存但搜不到 | 核对 store、Pending 状态、宿主索引及 search issues |
 
-本页是安装经验记录，不宣称首阶段已经实现无人参与的一键安装。平台认证、首次 ASR 安装与跨平台支持仍需要后续完善。
+更新前备份目标 Skill 和本项目配置，不覆盖其他宿主。卸载只处理明确由本项目创建的目录；不删除共享依赖、原知识、模型或登录态。安装回执记录“复用/新装/缺失/待本人操作”，不宣称无人参与的一键安装。

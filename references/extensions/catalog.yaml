@@ -1,5 +1,5 @@
 schema_version: 1
-reviewed_on: '2026-09-29'
+reviewed_on: '2026-10-07'
 purpose: 让用户的 Agent 根据能力缺口选择、复用或按需安装第三方项目
 catalog_state: mixed-verified-and-planned
 installation_policy: on-demand-reuse-existing-first
@@ -9,32 +9,72 @@ base:
   reference_capture_backend: opencli
   host: 用户自己选择并已授权使用的 Agent
   default_store: markdown
-  verified_scope: OpenClaw 小红书参考配方及 media；Hermes 追加已有知识文件检索与合成材料保存验证，未复测采集或微信
+  verified_scope: OpenClaw本轮小红书与抖音各一条新视频首次保存及微信送达；两宿主隔离安装与指定空库检查；media新默认仅安装和抽帧已验，视觉闭环另验；Hermes历史检索与合成保存仍保留
+  validation_report: ../../docs/v0.2-validation.md
 packs:
+  - id: local-asr
+    project: modelscope/FunASR
+    repo: https://github.com/modelscope/FunASR
+    license: MIT
+    provides: [video.transcript, audio.transcript]
+    use_when: 来源没有可复用字幕或转写，用户需要视频口播文字
+    reuse_first: [已有转写, 宿主已配置的 ASR, 已安装本地模型]
+    prerequisites: [当前固定安装配方为 macOS arm64 与 Python 3.11, 足够磁盘空间]
+    recipe: ../asr/README.md
+    runtime_recipe: ../asr/macos-arm64.lock.json
+    output_mapping: 带处理步骤的转写进入 SourceArtifact，不替代视频画面覆盖
+    limitations: [语音识别可能有误字, 不提供画面理解, 其他操作系统首次安装尚未验收]
+    evidence:
+      adapter_status: verified-local-asr-install
+      source2brain_tested_version: '1.4.16'
+      tested_platform: macOS-arm64
+      tested_scope: 独立安装完整固定依赖与模型并处理历史真实视频；另有本轮两条微信新视频真实转写，安装验收与微信送达分别记录
+      checked_on: '2026-10-07'
+    install_by_default: false
   - id: media
     project: steipete/summarize
     repo: https://github.com/steipete/summarize
     license: MIT
-    composed_projects:
-      - {project: naptha/tesseract.js, version: '7.0.0', license: Apache-2.0, role: 本地中英文 OCR，替代上游会过滤纯中文的 OCR 清理路径}
+    composed_capabilities: [宿主原生多模态能力或用户明确指定的视觉工具]
     runtime_recipe: media-runtime/package-lock.json
-    provides: [video.frames, video.frame_timestamps, video.ocr]
-    use_when: 需要语音以外的视频画面、课件或图表信息，或现有媒体提取不足
-    reuse_first: [已下载的视频, 现有转写结果, 已有 ffmpeg, 宿主已配置的视觉能力]
-    prerequisites: [Node 24+, 已保存来源的本地 MP4, 固定 media 运行依赖与中英文语言包]
-    install_docs: https://github.com/steipete/summarize/blob/main/docs/install.md
-    call_docs: https://github.com/steipete/summarize/blob/main/docs/commands/slides.md
+    provides: [video.frames, video.frame_timestamps, video.visual_evidence]
+    use_when: 需要语音以外的画面文字、课件或界面信息
+    reuse_first: [已下载的视频, 现有转写结果, 已有 ffmpeg, Agent原生视觉能力, 用户明确指定的视觉工具]
+    prerequisites: [Node 24+, 已保存来源的本地 MP4, 实际可用的图像输入能力]
+    install_docs: https://github.com/steipete/summarize/blob/v0.24.0/docs/install.md
+    call_docs: https://github.com/steipete/summarize/blob/v0.24.0/docs/commands/slides.md
     recipe: media.md
-    output_mapping: SourceEnhancement v1 追加帧文件、时间戳、原始 OCR 与精确引用，保留原笔记
-    limitations: [抽到帧不等于理解画面, OCR 不等于图表语义, 抽样可能漏掉动态操作, 不能假设直接支持小红书短链]
+    output_mapping: SourceEnhancement v2保存抽样帧与视觉识读引用；旧v1 OCR证据和勘误兼容，原笔记不覆盖
+    limitations: [抽到帧不等于已看图, 多模态同样可能误读, 抽样可能漏掉动态操作, 缺视觉能力不静默回退OCR]
     evidence:
       upstream_docs_checked: true
       source2brain_tested_version: '0.24.0'
-      adapter_status: verified-media-recipe
+      adapter_status: verified-limited-frame-vision-save-recall
       tested_platform: macOS-arm64
-      tested_ocr: 'tesseract.js@7.0.0'
-      tested_scope: 已保存小红书视频的抽样帧与中英文 OCR，追加增强，新会话召回
-      acceptance: 两条素材已处理，一条画面新增事实通过回读，另一条保留 Pending
+      historical_scope: summarize与Tesseract旧版抽样OCR追加增强及新会话召回已测
+      historical_report: ../../docs/media-validation.md
+      checked_on: '2026-10-07'
+      current_scope: 新锁安装复跑和6帧抽取通过；另复用历史7帧中的1帧经指定Qwen工具识读与维护端核对，v2追加保存和独立新会话召回通过；不代表6帧完整视觉识读或新视觉微信链路
+      installation: verified-summarize-only
+      extraction: verified-real-video-6-frames
+      current_visual_pipeline: verified-reused-single-frame-save-and-cli-recall
+      current_report: ../../docs/v0.2-validation.md
+      runtime_lock_sha256: e4930f8d93ce6effbb6c023b06fd71016e42f8825c36f11175f3b8137d81985c
+    ocr_install_by_default: false
+    visual_model_install_by_default: false
+    install_by_default: false
+  - id: paddleocr
+    project: PaddlePaddle/PaddleOCR
+    repo: https://github.com/PaddlePaddle/PaddleOCR
+    license: Apache-2.0
+    provides: [image.text, document.structure]
+    use_when: 用户需要批量识字或文档解析且现有多模态能力不足
+    reuse_first: [现有视觉模型, 已安装PaddleOCR及模型]
+    prerequisites: [按硬件选择上游推理引擎, 独立环境, 固定模型与版本后另行验证]
+    recipe: paddleocr.md
+    output_mapping: 候选；需实现原图哈希和页序或帧时间到来源协议的映射
+    limitations: [不等同通用视频理解, 未完成本项目适配和固定安装配方, 不默认下载模型]
+    evidence: {upstream_docs_checked: true, checked_on: '2026-10-07', source2brain_tested_version: null, upstream_release_observed: '3.7.0', adapter_status: planned}
     install_by_default: false
   - id: documents
     project: microsoft/markitdown
@@ -46,7 +86,7 @@ packs:
     prerequisites: [兼容的 Python 环境, 按文档类型安装 extras]
     install_docs: https://github.com/microsoft/markitdown#installation
     call_docs: https://github.com/microsoft/markitdown
-    output_mapping: 转换正文、原文件信息及覆盖限制进入 SourceArtifact；当前协议仅支持小红书，需扩展
+    output_mapping: 转换正文、原文件信息及覆盖限制进入 SourceArtifact；当前协议支持小红书与抖音来源，文档来源仍需适配
     limitations: [扫描件和复杂版面需单独核验 OCR, 图表语义可能需要视觉处理, 按需选择 extras 而非默认 all]
     evidence: {upstream_docs_checked: true, source2brain_tested_version: null, adapter_status: planned}
     install_by_default: false

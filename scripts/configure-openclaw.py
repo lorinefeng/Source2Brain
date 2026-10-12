@@ -9,6 +9,7 @@ import secrets
 import shutil
 import subprocess
 import sys
+import tempfile
 
 
 def main():
@@ -19,8 +20,9 @@ def main():
     parser.add_argument("--base-url")
     parser.add_argument("--key-env", default="SOURCE2BRAIN_API_KEY")
     parser.add_argument("--store", type=pathlib.Path, default=pathlib.Path.home() / "SecondBrain")
-    parser.add_argument("--profile", default="source2brain")
-    parser.add_argument("--workspace", type=pathlib.Path, default=pathlib.Path.home() / ".local/share/source2brain/workspace")
+    parser.add_argument("--profile", default=os.environ.get("SOURCE2BRAIN_PROFILE", "source2brain"))
+    parser.add_argument("--openclaw-bin", type=pathlib.Path, help="明确指定现有 OpenClaw 可执行文件；默认使用本包 wrapper")
+    parser.add_argument("--workspace", type=pathlib.Path, default=None)
     parser.add_argument("--port", type=int, default=19291)
     args = parser.parse_args()
     if not args.profile.replace("-", "").isalnum():
@@ -47,7 +49,8 @@ def main():
             shutil.copy2(file, backup / file.name)
             (backup / file.name).chmod(0o600)
     config = json.loads(config_path.read_text()) if config_path.exists() else {}
-    workspace = args.workspace.expanduser().resolve()
+    default_workspace = pathlib.Path.home() / ".local/share/source2brain" / ("workspace" if args.profile == "source2brain" else f"workspaces/{args.profile}")
+    workspace = (args.workspace or pathlib.Path(os.environ.get("SOURCE2BRAIN_WORKSPACE", default_workspace))).expanduser().resolve()
     store = args.store.expanduser().resolve()
     (store / "Sources").mkdir(parents=True, mode=0o700, exist_ok=True)
     workspace.mkdir(parents=True, mode=0o700, exist_ok=True)
@@ -74,8 +77,6 @@ def main():
     lines = env_path.read_text().splitlines() if env_path.exists() else []
     lines = [line for line in lines if not line.startswith(("SOURCE2BRAIN_API_KEY=", "SOURCE2BRAIN_STORE="))]
     lines.extend([f"SOURCE2BRAIN_API_KEY={api_key}", f"SOURCE2BRAIN_STORE={store}"])
-    env_path.write_text("\n".join(lines) + "\n")
-    env_path.chmod(0o600)
     # 使用官方 config patch 校验并写入；stdout 不含配置内容。
     patch = {
         "models": {"providers": {args.provider: config["models"]["providers"][args.provider]}},
@@ -83,19 +84,42 @@ def main():
         "memory": {"search": memory}, "session": {"dmScope": "per-account-channel-peer"},
         "gateway": config["gateway"], "tools": {"profile": "coding"}
     }
-    result = subprocess.run(["openclaw", "--profile", args.profile, "config", "patch", "--stdin"], input=json.dumps(patch), text=True, capture_output=True)
-    if result.returncode:
-        diagnostic = result.stderr.replace(api_key, '[REDACTED]')
-        gateway_token = config.get('gateway', {}).get('auth', {}).get('token', '')
-        if gateway_token:
-            diagnostic = diagnostic.replace(gateway_token, '[REDACTED]')
-        print(diagnostic[-2500:], file=sys.stderr)
-        if (backup / ".env").exists():
-            shutil.copy2(backup / ".env", env_path)
-        else:
-            env_path.unlink(missing_ok=True)
-        raise RuntimeError("OpenClaw 配置校验失败；已恢复环境文件。使用 config validate 排查，勿输出密钥。")
-    config_path.chmod(0o600)
+    command = ([str(args.openclaw_bin.expanduser()), "--profile", args.profile] if args.openclaw_bin else
+               ["bash", str(pathlib.Path(__file__).resolve().with_name("openclaw.sh"))])
+    child_env = {**os.environ, "SOURCE2BRAIN_PROFILE": args.profile}
+    def restore_configuration():
+        for current in (env_path, config_path):
+            if (backup / current.name).exists():
+                shutil.copy2(backup / current.name, current)
+                current.chmod(0o600)
+            else:
+                current.unlink(missing_ok=True)
+
+    temporary = None
+    try:
+        # 同目录暂存并原子替换，避免写入中断留下截断的 .env。
+        with tempfile.NamedTemporaryFile(mode="w", dir=root, prefix=".env-", delete=False) as file:
+            temporary = pathlib.Path(file.name)
+            file.write("\n".join(lines) + "\n")
+        temporary.chmod(0o600)
+        temporary.replace(env_path)
+        temporary = None
+        result = subprocess.run([*command, "config", "patch", "--stdin"], input=json.dumps(patch), text=True,
+                                capture_output=True, env=child_env, timeout=120)
+        if result.returncode:
+            diagnostic = result.stderr.replace(api_key, '[REDACTED]')
+            gateway_token = config.get('gateway', {}).get('auth', {}).get('token', '')
+            if gateway_token:
+                diagnostic = diagnostic.replace(gateway_token, '[REDACTED]')
+            print(diagnostic[-2500:], file=sys.stderr)
+            raise RuntimeError("OpenClaw 配置校验失败")
+        config_path.chmod(0o600)
+    except BaseException:
+        restore_configuration()
+        raise
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
     print(json.dumps({"status": "configured", "profile": args.profile, "model": f"{args.provider}/{args.model}", "store": str(store), "backup": str(backup)}, ensure_ascii=False))
 
 

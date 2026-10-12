@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { hash, contentHash } from '../lib/artifact.mjs';
+import { hash, contentHash, validateArtifact } from '../lib/artifact.mjs';
 import { saveSource, verifyStore } from '../lib/store.mjs';
 import { enhancementId, validateEnhancement, saveEnhancement } from '../lib/enhancement.mjs';
 import { doctorMedia, enhanceVideo, parametersFor } from '../lib/media.mjs';
@@ -98,6 +98,26 @@ test('原来源版本改变时拒绝附加到错误版本', async t => {
   await assert.rejects(saveEnhancement(x.store, x.file), { code: 'BASE_CHANGED' });
 });
 
+test('抖音增强继承独立来源 ID，帧回读与旧笔记保护适用于新平台', async t => {
+  const b = base();
+  b.source = { ...b.source, platform: 'douyin', url: 'https://www.douyin.com/video/7123456789012345678', original_url: 'https://v.douyin.com/synthetic/' };
+  const a = extra(b); a.source.id = validateArtifact(b).id;
+  const root = await temp(t), input = path.join(root, 'input'), store = path.join(root, 'store');
+  await fs.mkdir(path.join(input, 'frames'), { recursive: true });
+  await fs.writeFile(path.join(input, a.frames[0].path), png);
+  const file = path.join(input, 'enhancement.json'); await fs.writeFile(file, JSON.stringify(a));
+  const saved = await saveSource(store, b); await fs.appendFile(saved.path, '\n抖音来源人工批注');
+  const before = await fs.readFile(saved.path);
+  const enhanced = await saveEnhancement(store, file);
+  assert.equal(enhanced.status, 'saved');
+  assert.deepEqual(await fs.readFile(saved.path), before);
+  const found = await searchStore(store, '42分');
+  assert.equal(found.matches[0].source_id, 'dy-7123456789012345678');
+  assert.equal(found.matches[0].source_url, b.source.url);
+  assert.equal(found.matches[0].kind, 'enhancement');
+  assert.equal((await verifyStore(store)).ok, true);
+});
+
 test('系统临时目录别名可用，但不放宽库内符号链接保护', async t => {
   const x = await fixture(t);
   const alias = p => process.platform === 'darwin' ? p.replace(/^\/private\/(var|tmp)\//, '/$1/') : p;
@@ -119,28 +139,33 @@ async function mediaFixture(t) {
   return { root, file, checkRuntime, runner };
 }
 
-test('media 保留中英文 OCR 原文、真实时间戳，抽取后仍需 Agent 整理', async t => {
+test('默认 media 只保留真实帧和时间戳，v2等待视觉输入且不调用OCR', async t => {
   const x = await mediaFixture(t);
-  const result = await enhanceVideo(x.file, path.join(x.root, 'out'), { ...x, recognize: async () => [{ status: 'complete', text: '中文\nBenchmark 42', confidence: 0.87 }] });
-  assert.equal(result.status, 'enhanced_needs_review');
+  const result = await enhanceVideo(x.file, path.join(x.root, 'out'), { ...x, recognize: async () => assert.fail('默认路线不能调用OCR') });
+  assert.equal(result.status, 'frames_extracted_needs_vision');
   const a = JSON.parse(await fs.readFile(result.artifact));
-  assert.equal(a.frames[0].ocr.text, '中文\nBenchmark 42'); assert.equal(a.frames[0].timestamp_seconds, 2.5);
+  assert.equal(a.schema_version, 2); assert.equal(a.coverage.vision, 'pending');
+  assert.equal(a.frames[0].vision.status, 'pending'); assert.equal(a.frames[0].vision.reviewer, null);
+  assert.equal(a.frames[0].ocr, undefined); assert.equal(a.frames[0].timestamp_seconds, 2.5);
   assert.equal(a.coverage.status, 'partial'); assert.equal(a.provenance.model, 'pending');
 });
 
-test('空文字帧不是 OCR 失败；重试配方有明确上限', async t => {
+test('抽帧重试有明确上限；旧v1空文字OCR帧保持合法但不伪造事实', async t => {
   const x = await mediaFixture(t);
-  const result = await enhanceVideo(x.file, path.join(x.root, 'out'), { ...x, retry: true, recognize: async () => [{ status: 'complete', text: '', confidence: 0 }] });
-  assert.equal(result.coverage.ocr, 'complete'); assert.equal(result.retry_available, false);
+  const result = await enhanceVideo(x.file, path.join(x.root, 'out'), { ...x, retry: true });
+  assert.equal(result.coverage.vision, 'pending'); assert.equal(result.retry_available, false);
   assert.equal(JSON.parse(await fs.readFile(result.artifact)).parameters.max_frames, 48);
+  const legacy = extra(); legacy.frames[0].ocr = { status: 'complete', text: '', confidence: 0 };
+  legacy.coverage.status = 'partial'; legacy.coverage.review = 'pending'; legacy.knowledge = { summary: '', claims: [] };
+  assert.ok(validateEnhancement(legacy)); legacy.coverage.status = 'complete';
+  assert.throws(() => validateEnhancement(legacy));
 });
 
-test('抽帧和 OCR 故障保留部分结果，不伪装成完整', async t => {
+test('默认抽帧故障保留v2待审状态，不伪装成视觉完成', async t => {
   const x = await mediaFixture(t);
   const failed = await enhanceVideo(x.file, path.join(x.root, 'failed'), { ...x, runner: async () => { throw Object.assign(new Error(), { code: 'COMMAND_TIMEOUT' }); } });
   assert.equal(failed.status, 'partial'); assert.equal(failed.frames, 0);
-  const ocrFailed = await enhanceVideo(x.file, path.join(x.root, 'ocr-failed'), { ...x, recognize: async () => [{ status: 'failed', text: '', confidence: null, error_code: 'OCR_FAILED' }] });
-  assert.equal(ocrFailed.status, 'partial'); assert.equal(ocrFailed.frames, 1); assert.equal(ocrFailed.coverage.ocr, 'missing');
+  assert.equal(failed.coverage.vision, 'pending'); assert.equal(failed.coverage.review, 'pending');
 });
 
 test('依赖缺失只报告状态，不安装或创建工作目录', async t => {
@@ -151,20 +176,14 @@ test('依赖缺失只报告状态，不安装或创建工作目录', async t => 
   await assert.rejects(fs.stat(path.join(x.root, 'out')), { code: 'ENOENT' });
 });
 
-test('部分 OCR 失败保留成功帧，但整体不能晋级完成', async t => {
-  const x = await mediaFixture(t);
-  const runner = async (command, args) => {
-    const result = JSON.parse((await x.runner(command, args)).stdout);
-    result.slides.slides.push({ ...result.slides.slides[0], index: 2, timestamp: 3.5 });
-    return { stdout: JSON.stringify(result) };
-  };
-  const result = await enhanceVideo(x.file, path.join(x.root, 'out'), { ...x, runner, recognize: async () => [
-    { status: 'complete', text: '中文与 English 42', confidence: 0.91 },
-    { status: 'failed', text: '', confidence: null, error_code: 'OCR_FAILED' }
-  ] });
-  assert.equal(result.status, 'partial'); assert.equal(result.coverage.ocr, 'partial');
-  const a = JSON.parse(await fs.readFile(result.artifact));
-  assert.equal(a.frames[0].ocr.text, '中文与 English 42'); assert.equal(a.frames[1].ocr.status, 'failed');
+test('历史v1部分OCR失败仍可保留成功帧，但整体仅进入Pending', async t => {
+  const a = extra(), timestamp = 3.5, id = `frame-${hash(`${hash(png)}:${timestamp}`).slice(0,20)}`;
+  a.frames.push({ id, path: `frames/${id}.png`, sha256: hash(png), timestamp_seconds: timestamp, ocr: { status: 'failed', text: '', confidence: null, error_code: 'OCR_FAILED' } });
+  a.coverage.status = 'partial'; a.coverage.ocr = 'partial'; a.coverage.review = 'pending';
+  const x = await fixture(t, a), saved = await saveEnhancement(x.store, x.file);
+  assert.equal(saved.status, 'pending'); assert.equal((await verifyStore(x.store)).enhancements.length, 0);
+  assert.equal(a.frames[0].ocr.text, '合成榜单\nModel A 42分'); assert.equal(a.frames[1].ocr.status, 'failed');
+  a.coverage.status = 'complete'; assert.throws(() => validateEnhancement(a));
 });
 
 test('发布阶段故障不会留下半份增强，且会清理本次暂存目录', async t => {
@@ -191,4 +210,13 @@ test('安装失败保留旧运行目录；复跑就绪环境不重复调用 npm'
   assert.deepEqual(await fs.readdir(root), ['media']);
   const result = await installMedia(runtime, { checkRuntime: async () => ({ ready: true }), runner: async () => { assert.fail('不应重复安装'); } });
   assert.equal(result.status, 'reused');
+});
+
+test('新版采集回执绑定视频哈希，媒体被替换时不开始增强', async t => {
+  const x = await mediaFixture(t);
+  const a = JSON.parse(await fs.readFile(x.file, 'utf8'));
+  a.provenance.media_files[0].sha256 = hash('different media');
+  await fs.writeFile(x.file, JSON.stringify(a));
+  await assert.rejects(enhanceVideo(x.file, path.join(x.root, 'out'), { ...x }), { code: 'MEDIA_CHANGED' });
+  await assert.rejects(fs.stat(path.join(x.root, 'out')), { code: 'ENOENT' });
 });

@@ -8,3 +8,18 @@ coverage/
 *.tgz
 __pycache__/
 *.pyc
+
+# 视频工程的私有素材与可再生成产物
+video/public/audio/
+video/public/evidence/
+video/public/recordings/
+video/out/
+video/.remotion/
+video/content/manifest.json
+video/public/v2/
+video/public/v3/
+
+# 制作样例的真实来源资料只随本地审片包提供
+video/content/v2/evidence.json
+video/public/v4/
+video/content/v4/evidence.json
