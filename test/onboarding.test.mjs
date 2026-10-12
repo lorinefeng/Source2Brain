@@ -37,6 +37,17 @@ async function fakeRuntime(t) {
   const dir=await temp(t),bin=path.join(dir,'bin'),home=path.join(dir,'home'),log=path.join(dir,'calls.jsonl');await fs.mkdir(bin);
   await fs.writeFile(path.join(bin,'uname'),'#!/bin/bash\n[[ "$1" == -s ]] && echo Darwin || echo arm64\n',{mode:0o755});
   await fs.writeFile(path.join(bin,'npm'),'#!/bin/bash\necho unexpected-install >&2\nexit 91\n',{mode:0o755});
+  // 恢复逻辑的合成宿主模拟 Node 24+；测试执行器本身仍可使用核心支持的 Node 22。
+  // 只替代版本门槛探测，打包与回执脚本仍由实际测试执行器执行。
+  const nodeShim=path.join(bin,'synthetic-node');
+  await fs.writeFile(nodeShim,`#!${process.execPath}
+const {spawnSync}=require('node:child_process');
+const args=process.argv.slice(2);
+if(args[0]==='-e'&&args[1]==='process.exit(Number(process.versions.node.split(".")[0])>=24?0:1)')process.exit(0);
+const result=spawnSync(${JSON.stringify(process.execPath)},args,{stdio:'inherit'});
+if(result.error)throw result.error;
+process.exit(result.status??1);
+`,{mode:0o755});
   const claw=path.join(bin,'fake-openclaw');
   await fs.writeFile(claw,`#!${process.execPath}
 const fs=require('fs'),path=require('path');const args=process.argv.slice(2);
@@ -48,8 +59,16 @@ if(cmd[0]==='config'&&cmd[1]==='get'){console.log(workspace);process.exit(0)}
 if(cmd[0]==='skills'&&cmd[1]==='install'){const dest=path.join(workspace,'skills/source2brain');fs.mkdirSync(path.dirname(dest),{recursive:true});if(process.env.FAIL_SKILL){fs.rmSync(dest,{recursive:true,force:true});fs.mkdirSync(dest);fs.writeFileSync(path.join(dest,'broken'),'x');process.exit(1)}fs.rmSync(dest,{recursive:true,force:true});fs.cpSync(cmd[2],dest,{recursive:true});process.exit(0)}
 if(cmd[0]==='config'&&cmd[1]==='patch'){let input='';process.stdin.on('data',x=>input+=x);process.stdin.on('end',()=>{fs.mkdirSync(state,{recursive:true});fs.writeFileSync(path.join(state,'openclaw.json'),input);process.exit(process.env.FAIL_PATCH?1:0)});}
 `,{mode:0o755});
-  return {dir,home,log,claw,env:{HOME:home,PATH:`${bin}:${process.env.PATH}`,SOURCE2BRAIN_NODE_BIN:process.execPath,SOURCE2BRAIN_OPENCLAW_BIN:claw,SOURCE2BRAIN_PROFILE:'isolated-test',SOURCE2BRAIN_WORKSPACE:path.join(dir,'workspace'),SOURCE2BRAIN_LOG:log}};
+  return {dir,home,log,claw,env:{HOME:home,PATH:`${bin}:${process.env.PATH}`,SOURCE2BRAIN_NODE_BIN:nodeShim,SOURCE2BRAIN_OPENCLAW_BIN:claw,SOURCE2BRAIN_PROFILE:'isolated-test',SOURCE2BRAIN_WORKSPACE:path.join(dir,'workspace'),SOURCE2BRAIN_LOG:log}};
 }
+
+test('常驻安装拒绝低版本 Node，检测失败不创建环境或调用安装', async t => {
+  const x=await fakeRuntime(t),oldNode=path.join(x.dir,'synthetic-old-node');
+  await fs.writeFile(oldNode,'#!/bin/bash\nexit 1\n',{mode:0o755});
+  const p=run('bash',['scripts/bootstrap-macos.sh'],{...x.env,SOURCE2BRAIN_NODE_BIN:oldNode});
+  assert.equal(p.status,1);assert.match(p.stderr,/需要 Node 24\+/);
+  assert.equal(await exists(x.home),false);assert.equal(await exists(x.log),false);
+});
 
 test('bootstrap 默认只检查；已存在依赖复用且 profile 一致，失败恢复旧 Skill', async t => {
   const x=await fakeRuntime(t);
