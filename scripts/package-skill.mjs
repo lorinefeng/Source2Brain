@@ -6,7 +6,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 // 明确携带运行与安装依赖；不会复制 .git、.local、模型或机器配置。
 export const skillFiles = ['SKILL.md', 'LICENSE', 'README.md', 'package.json', 'integrations.yaml',
-  'lib', 'references', 'templates', 'docs/installation.md', 'docs/wechat-recipe.md',
+  'lib', 'references', 'templates', 'docs/installation.md', 'docs/wechat-recipe.md', 'docs/recovery.md',
   'scripts/brain.mjs', 'scripts/transcribe-local.py', 'scripts/install-media.mjs', 'scripts/media-ocr.mjs',
   'scripts/install-asr.py', 'scripts/package-skill.mjs', 'scripts/bootstrap-macos.sh',
   'scripts/openclaw.sh', 'scripts/runtime-env.sh', 'scripts/configure-openclaw.py'];

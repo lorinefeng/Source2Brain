@@ -85,6 +85,14 @@ node scripts/brain.mjs enhance --pack media --artifact /来源目录/artifact.js
 
 Agent 随后按[media 配方](references/extensions/media.md)核对原帧与原转写，保存增强并回读。现有真实结果见[media 历史验收](docs/media-validation.md)；新版验证见[验证矩阵](docs/v0.2-validation.md)。
 
+## 失败后接着做（v0.3 候选）
+
+新增持久化任务接口正在验收，当前已发布版本仍是 v0.2.0。网络临时故障最多再试两次；登录、验证、超时和证据损坏暂停并保留进度。重启后说“继续处理”，从有效检查点续跑；“重发结果”只补发已保存答复，不重新采集。
+
+已保存口播、待补画面、索引未验证和回复未确认会分别说明。已完成步骤先校验哈希再复用，人工笔记不覆盖；微信发送不确定时不自动补发。
+
+[用户与 Agent 恢复指南](docs/recovery.md) · [v0.3 验收进度](docs/v0.3-validation.md)。新接口随完整 Skill 分发，不增加队列服务或基础依赖。
+
 ## 开发与分发
 
 ```sh
