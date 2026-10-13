@@ -107,3 +107,11 @@ node scripts/brain.mjs verify --store "$HOME/SecondBrain"
 | 内容保存但搜不到 | 核对 store、Pending 状态、宿主索引及 search issues |
 
 更新前备份目标 Skill 和本项目配置，不覆盖其他宿主。卸载只处理明确由本项目创建的目录；不删除共享依赖、原知识、模型或登录态。安装回执记录“复用/新装/缺失/待本人操作”，不宣称无人参与的一键安装。
+
+## 处理失败后的恢复（v0.3 候选）
+
+先查看原任务的 job status，不以另建目录或重装依赖作为默认重试。缺 ASR/media 时查对应固定配方并复用已有配置，补齐后 job resume。既有 Python 3.9 转写环境可复用，不因哈希计算要求升级用户共享 Python。
+
+平台页面字段变化会造成 EMPTY_MEDIA 或 INVALID_TOOL_OUTPUT；先核对当前指定来源结构与工具版本，不猜媒体地址、导出 Cookie 或放宽 CDN 范围。小红书视频必须取得真实视频流，封面不能替代视频采集。
+
+更新前备份 Skill、工作区指令和项目配置。正在处理的任务先等空闲；不要重新登录或重复安装 Gateway。回滚旧 Skill 不删除新任务、来源或证据。具体命令、错误对照与人工补发见[失败与恢复指南](recovery.md)。

@@ -230,3 +230,9 @@ test('没有新增文字事实时保留Pending增强，音频来源不撤销',as
  const x=await fixture(t);let s=await resumeJob(x.options,x.services);s=await answer(x,s);s=await answer(x,s);s=await answer(x,s);assert.equal(s.next_action.stage,'enhancement');
  const a=JSON.parse(await fs.readFile(s.next_action.input,'utf8'));a.provenance.model='synthetic';a.knowledge={summary:'没有可靠新增文字',claims:[]};s=await record(x,s,a);assert.equal(s.error.code,'NO_VISUAL_FACT');assert.equal(s.saved.status,'saved');assert.equal((await verifyStore(x.options.store)).ok,true);const files=await fs.readdir(path.join(x.options.store,'Pending',s.source_id,'enhancements'));assert.equal(files.length,1);
 });
+
+test('空库查询进度返回空列表；单个损坏任务不阻断其他任务或泄漏其ID',async t=>{
+ const x=await fixture(t);assert.deepEqual((await listJobs({...x.options,store:path.join(x.root,'missing')})).tasks,[]);
+ const corrupt='job-111111111111111111111111',folder=path.join(x.options.store,'.source2brain/jobs',corrupt);await fs.mkdir(folder);await fs.writeFile(path.join(folder,'state.json'),'{broken');
+ const list=await listJobs(x.options);assert.equal(list.tasks.length,1);assert.ok(list.warning);assert.ok(!JSON.stringify(list).includes(corrupt));await assert.rejects(statusJob({...x.options,id:corrupt}),{code:'INVALID_JOB'});
+});
