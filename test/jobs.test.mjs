@@ -236,3 +236,10 @@ test('空库查询进度返回空列表；单个损坏任务不阻断其他任�
  const corrupt='job-111111111111111111111111',folder=path.join(x.options.store,'.source2brain/jobs',corrupt);await fs.mkdir(folder);await fs.writeFile(path.join(folder,'state.json'),'{broken');
  const list=await listJobs(x.options);assert.equal(list.tasks.length,1);assert.ok(list.warning);assert.ok(!JSON.stringify(list).includes(corrupt));await assert.rejects(statusJob({...x.options,id:corrupt}),{code:'INVALID_JOB'});
 });
+
+test('宿主已写结果但尚未record时，resume校验接管，不重复要求识图或整理',async t=>{
+ const x=await fixture(t);let s=await resumeJob(x.options,x.services),action=s.next_action;
+ const a=JSON.parse(await fs.readFile(action.input,'utf8'));a.extraction.status='complete';a.knowledge.summary='合成摘要';a.provenance.model='synthetic';await atomicJson(action.output,a);
+ s=await resumeJob(x.options,x.services);assert.equal(s.next_action.stage,'vision');action=s.next_action;
+ await atomicJson(action.output,{unit_id:action.unit_id,input_sha256:action.input_sha256,vision:vision()});s=await resumeJob(x.options,x.services);assert.notEqual(s.next_action.unit_id,action.unit_id);assert.equal(s.next_action.stage,'vision');assert.deepEqual(x.counts,{capture:1,transcribe:1,frames:1});
+});
