@@ -4,7 +4,7 @@
 
 刷抖音、小红书遇到干货，来不及消化？你可以把链接交给现有 Agent；也可以按可选配方接入微信 ClawBot，让常驻电脑上的 Agent 接着处理。整理结果保存在普通 Markdown 文件夹，下一次写稿、做方案时，再带着出处找回来。
 
-**当前版本：[v0.2.0](https://github.com/lorinefeng/Source2Brain/releases/tag/v0.2.0)。** 从开发者预览进入按明确范围交付的正式版本：双平台视频采集、可选微信入口、普通文件知识库和按需视觉证据。主要运行实测环境为 **macOS arm64**；各项能力的实测层级见[验证矩阵](docs/v0.2-validation.md)，尚待补齐的工作见[路线图](docs/roadmap.md)。
+**当前版本：[v0.3.0](https://github.com/lorinefeng/Source2Brain/releases/tag/v0.3.0)。** 本次完善失败与恢复：说明卡在哪一步、保留有效成果，继续处理时复用检查点，显式补发只发送已有答复。双平台采集、可选微信入口、Markdown 知识库和按需视觉证据延续既有范围。主要运行实测环境为 **macOS arm64**；见[可靠性验收](docs/v0.3-validation.md)、[能力验证矩阵](docs/v0.2-validation.md)及[路线图](docs/roadmap.md)。
 
 ## 60 秒认识 Source2Brain
 
@@ -46,7 +46,7 @@ Source2Brain 针对“收藏很多，做事时用不上”的问题，把成熟�
 
 把仓库链接和下面提示词发给你正在使用的 Agent：
 
-> 请读取 https://github.com/lorinefeng/Source2Brain 的 README、当前宿主接入说明和 SKILL.md，为我安装 v0.2.0 的完整 Source2Brain Skill，并核对 Release 的 SHA256SUMS。先确认实际运行机器，检测并复用已有模型、Node、采集工具和本地转写能力；缺失时按项目配方补齐，不修改其他 Agent 的默认模型或配置。知识保存到 `~/SecondBrain`。常驻整理优先使用原生多模态能力；我的主模型只有文本能力时，先检测我指定的视觉工具。平台登录由我在运行电脑完成。安装后用真实链接验证保存，再开独立新会话查回来源；逐项说明哪些通过、哪些仍有缺口。
+> 请读取 https://github.com/lorinefeng/Source2Brain 的 README、当前宿主接入说明和 SKILL.md，为我安装 v0.3.0 的完整 Source2Brain Skill，并核对 Release 的 SHA256SUMS。先确认实际运行机器，检测并复用已有模型、Node、采集工具和本地转写能力；缺失时按项目配方补齐，不修改其他 Agent 的默认模型或配置。知识保存到 `~/SecondBrain`。常驻整理优先使用原生多模态能力；我的主模型只有文本能力时，先检测我指定的视觉工具。平台登录由我在运行电脑完成。安装后用真实链接验证保存，再开独立新会话查回来源；逐项说明哪些通过、哪些仍有缺口。
 
 | 宿主 | 安装与验收入口 | 边界 |
 | --- | --- | --- |
@@ -55,7 +55,7 @@ Source2Brain 针对“收藏很多，做事时用不上”的问题，把成熟�
 | WorkBuddy | [本地 Skill 导入指引](references/hosts/workbuddy.md) | 官方资料级，未实装验收 |
 | 其他 Agent | [宿主资料索引](references/hosts/README.md) | 按各页实测状态，不宣称全部即装即用 |
 
-完整 Skill 必须包含脚本、`lib/`、配方和安装资源。不要只复制 `SKILL.md`。从 [v0.2.0 Release](https://github.com/lorinefeng/Source2Brain/releases/tag/v0.2.0) 下载 `source2brain-skill-0.2.0.tar.gz` 和 `SHA256SUMS`；源码用户可执行 `node scripts/package-skill.mjs` 构建。
+完整 Skill 必须包含脚本、`lib/`、配方和安装资源。不要只复制 `SKILL.md`。从 [v0.3.0 Release](https://github.com/lorinefeng/Source2Brain/releases/tag/v0.3.0) 下载 `source2brain-skill-0.3.0.tar.gz` 和 `SHA256SUMS`；源码用户可执行 `node scripts/package-skill.mjs` 构建。
 
 ### 可选：手机微信收链接
 
@@ -85,13 +85,13 @@ node scripts/brain.mjs enhance --pack media --artifact /来源目录/artifact.js
 
 Agent 随后按[media 配方](references/extensions/media.md)核对原帧与原转写，保存增强并回读。现有真实结果见[media 历史验收](docs/media-validation.md)；新版验证见[验证矩阵](docs/v0.2-validation.md)。
 
-## 失败后接着做（v0.3 候选）
+## 失败后接着做
 
-新增持久化任务接口正在验收，当前已发布版本仍是 v0.2.0。网络临时故障最多再试两次；登录、验证、超时和证据损坏暂停并保留进度。重启后说“继续处理”，从有效检查点续跑；“重发结果”只补发已保存答复，不重新采集。
+v0.3 用持久化任务记录每一步和可复用产物。网络临时故障最多再试两次；登录、验证、超时和证据损坏暂停并保留进度。重启后说“继续处理”，从有效检查点续跑；“重发结果”只补发已保存答复，不重新采集。
 
 已保存口播、待补画面、索引未验证和回复未确认会分别说明。已完成步骤先校验哈希再复用，人工笔记不覆盖；微信发送不确定时不自动补发。
 
-[用户与 Agent 恢复指南](docs/recovery.md) · [v0.3 验收进度](docs/v0.3-validation.md)。新接口随完整 Skill 分发，不增加队列服务或基础依赖。
+[用户与 Agent 恢复指南](docs/recovery.md) · [v0.3 验收记录](docs/v0.3-validation.md)。新接口随完整 Skill 分发，不增加队列服务或基础依赖。
 
 ## 开发与分发
 
