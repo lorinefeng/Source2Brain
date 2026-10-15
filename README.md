@@ -6,17 +6,17 @@
 
 **当前版本：[v0.3.0](https://github.com/lorinefeng/Source2Brain/releases/tag/v0.3.0)。** 本次完善失败与恢复：说明卡在哪一步、保留有效成果，继续处理时复用检查点，显式补发只发送已有答复。双平台采集、可选微信入口、Markdown 知识库和按需视觉证据延续既有范围。主要运行实测环境为 **macOS arm64**；见[可靠性验收](docs/v0.3-validation.md)、[能力验证矩阵](docs/v0.2-validation.md)及[路线图](docs/roadmap.md)。
 
-## 60 秒认识 Source2Brain
+## 38 秒看懂 Source2Brain
 
-[![Source2Brain：把优秀开源方案装进你的 Agent 工具箱，点击观看一分钟介绍](docs/assets/source2brain-toolbox.png)](https://github.com/lorinefeng/Source2Brain/blob/main/media/source2brain-intro-60s.mp4)
+<a href="https://github.com/lorinefeng/Source2Brain/blob/main/media/source2brain-intro.mp4"><img src="docs/assets/source2brain-hook.png" width="300" alt="你收藏的 1000 条干货，和没看过没区别。点击观看 38 秒介绍"></a>
 
-**[▶ 播放 60 秒介绍](https://github.com/lorinefeng/Source2Brain/blob/main/media/source2brain-intro-60s.mp4)** · [下载 MP4](https://github.com/lorinefeng/Source2Brain/releases/download/v0.2.0/source2brain-intro-60s.mp4) · [字幕](https://github.com/lorinefeng/Source2Brain/blob/main/media/source2brain-intro-60s.srt)
+**[▶ 播放 38 秒介绍](https://github.com/lorinefeng/Source2Brain/blob/main/media/source2brain-intro.mp4)** · [字幕](https://github.com/lorinefeng/Source2Brain/blob/main/media/source2brain-intro.srt)
 
-原 120 秒介绍片按 **2 倍速**压至 60 秒，保留音高与画内字幕。画面中的界面示意和实测范围标注保留；视频展示主线，具体支持程度以验证矩阵为准。
+一个真实案例：小红书刷到一条视频，把链接发进微信，然后什么都不做。常开的电脑把口播转成文字、截好关键画面、存进知识库；当晚一个全新对话，就能带着原视频第 46 秒的出处把它用进新稿子。纯配乐，无配音；等待已加速，界面按运行记录重建，视频帧为原图。
 
-| 把链接发给微信 | 把画面证据补回来 | 下次写稿带着出处用 |
+| 发进微信，然后什么都不做 | 电脑交回来的真实产物 | 下次写稿，带着出处找回来 |
 | :---: | :---: | :---: |
-| ![微信接收资源链接并回复整理结果](docs/assets/source2brain-wechat.png) | ![实际视频帧中的文字与时间戳证据](docs/assets/source2brain-vision.png) | ![独立新会话回读来源并用于创作](docs/assets/source2brain-recall.png) |
+| <img src="docs/assets/source2brain-wechat.png" width="240" alt="复制小红书链接，发给微信里的 AI"> | <img src="docs/assets/source2brain-save.png" width="240" alt="转写原文、6 张抽样帧与 Markdown 笔记"> | <img src="docs/assets/source2brain-recall.png" width="240" alt="独立新对话回读来源，引用原视频 00:46.83 的原帧"> |
 
 ## 它负责什么
 
