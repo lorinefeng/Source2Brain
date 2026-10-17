@@ -6,7 +6,7 @@
 
 | 需求 | 路线 | 需要安装什么 |
 | --- | --- | --- |
-| 在现有 Agent 里收藏、检索 | [Hermes](../references/hosts/hermes.md)、[OpenClaw](../references/openclaw.md)、[WorkBuddy](../references/hosts/workbuddy.md) | 完整 Source2Brain Skill；按实际需求补 Node、采集、ASR 或 media |
+| 在现有 Agent 里收藏、检索 | [OpenClaw](../references/openclaw.md)、[Hermes](../references/hosts/hermes.md)、[Codex](../references/hosts/codex.md)、[Claude Code](../references/hosts/claude-code.md)、[WorkBuddy](../references/hosts/workbuddy.md)、[DeepSeek Harness](../references/hosts/deepseek-harness.md) | 完整 Source2Brain Skill；按实际需求补 Node、采集、ASR 或 media |
 | 手机微信发链接，电脑常驻处理 | [微信常驻配方](wechat-recipe.md) | 独立 OpenClaw profile 和腾讯微信插件；复用已有环境和绑定 |
 
 不要仅复制 SKILL.md。发行包中的 `scripts/`、`lib/`、`references/`、安装文档和模板必须保持相对位置。下载实际发布版本的完整 Skill 包并核验 SHA256SUMS；候选包不能冒充已公开发布的版本。

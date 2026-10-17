@@ -40,4 +40,8 @@
 
 11
 00:00:31,867 --> 00:00:35,583
+不用换工具：Codex、Claude Code、Hermes Agent、OpenClaw、WorkBuddy、DeepSeek Harness。把仓库发给它，它照着安装指引自己装好。
+
+12
+00:00:35,633 --> 00:00:39,317
 收藏，下次就能用上。github.com/lorinefeng/Source2Brain
