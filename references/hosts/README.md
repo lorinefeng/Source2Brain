@@ -4,15 +4,19 @@
 
 核对日期：2026-10-07。候选版本的分层实测结果见 [验证矩阵](../../docs/v0.2-validation.md)，新用户先看 [两条安装入口](../../docs/installation.md)。先读当前宿主这一页，再执行 Source2Brain Skill；不要自动安装其他宿主。以下资料覆盖技能发现、运行权限、环境变量、检索和常见故障；“解决大部分配置问题”是文档目标，没有测量过 80% 的解决率。
 
-| 宿主 | 首发状态 | 本项目说明 |
-| --- | --- | --- |
-| OpenClaw | 已有参考部署；历史采集、语义召回、微信重复收藏回复已验收 | [接入](../openclaw.md) |
-| Hermes Agent | 本轮第二宿主；具体验证范围以仓库验收报告为准 | [安装与检索](hermes.md) |
-| Codex | 官方资料已核对，未做用户安装验收 | [接入资料](codex.md) |
-| Claude Code | 官方资料已核对，未实装 | [接入资料](claude-code.md) |
-| WorkBuddy | 本地 Skill 官方导入资料已核对，未实装 | [接入资料](workbuddy.md) |
-| Qoder | 官方资料已核对，未实装 | [接入资料](qoder.md) |
-| DeepSeek Harness | 官方源码文档已核对，未实装 | [接入资料](deepseek-harness.md) |
+每页都有一段「复制给该 Agent」的安装提示词、完整包放置目录、确认方法、知识目录权限和排障顺序。用户把仓库链接发给自己在用的 Agent，它按对应页面安装即可。
+
+| 宿主 | 状态 | 推荐安装目录 | 本项目说明 |
+| --- | --- | --- | --- |
+| OpenClaw | 已有参考部署；采集、语义召回、微信收发已验收 | 当前 profile 的 workspace skills | [接入](../openclaw.md) |
+| Hermes Agent | 已实测 Skill 安装与指定库回读 | `$HERMES_HOME/skills/source2brain` | [安装与检索](hermes.md) |
+| Codex | 官方资料指引（2026-10-17），未实装验收 | `~/.agents/skills/source2brain` | [安装指引](codex.md) |
+| Claude Code | 官方资料指引（2026-10-17），未实装验收 | `~/.claude/skills/source2brain` | [安装指引](claude-code.md) |
+| WorkBuddy | 官方本地导入指引，未实装验收 | 技能 → 添加技能 → 上传技能 | [安装指引](workbuddy.md) |
+| DeepSeek Harness | 官方源码文档指引（2026-10-17），未实装验收 | `~/.dsh/skills/source2brain` | [安装指引](deepseek-harness.md) |
+| Qoder | 官方资料已核对，未实装 | 见页面 | [接入资料](qoder.md) |
+
+「指引」表示按官方文档写好了可执行步骤；「已验收」才表示本项目在该宿主跑通过真实保存与新会话召回。
 
 ## 共用排障顺序
 
