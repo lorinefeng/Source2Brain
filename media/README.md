@@ -1,6 +1,6 @@
-# 42 秒项目介绍
+# 44 秒项目介绍
 
-`source2brain-intro.mp4`：720×1280、30fps、约 42 秒，H.264 + AAC，适合在 GitHub 直接播放。`source2brain-intro.srt` 是同步字幕。
+`source2brain-intro.mp4`：720×1280、30fps、约 44 秒，H.264 + AAC，适合在 GitHub 直接播放。`source2brain-intro.srt` 是同步字幕。
 
 视频以 2026-10-07 的一次真实运行为案例（macOS · OpenClaw · 微信 ClawBot），先讲体验，再讲能力：
 

@@ -6,11 +6,11 @@
 
 **当前版本：[v0.3.0](https://github.com/lorinefeng/Source2Brain/releases/tag/v0.3.0)。** 本次完善失败与恢复：说明卡在哪一步、保留有效成果，继续处理时复用检查点，显式补发只发送已有答复。双平台采集、可选微信入口、Markdown 知识库和按需视觉证据延续既有范围。主要运行实测环境为 **macOS arm64**；见[可靠性验收](docs/v0.3-validation.md)、[能力验证矩阵](docs/v0.2-validation.md)及[路线图](docs/roadmap.md)。
 
-## 42 秒看懂 Source2Brain
+## 44 秒看懂 Source2Brain
 
-<a href="https://github.com/lorinefeng/Source2Brain/blob/main/media/source2brain-intro.mp4"><img src="docs/assets/source2brain-hook.png" width="300" alt="你收藏的 1000 条干货，和没看过没区别。点击观看 42 秒介绍"></a>
+<a href="https://github.com/lorinefeng/Source2Brain/blob/main/media/source2brain-intro.mp4"><img src="docs/assets/source2brain-hook.png" width="300" alt="你收藏的 1000 条干货，和没看过没区别。点击观看 44 秒介绍"></a>
 
-**[▶ 播放 42 秒介绍](https://github.com/lorinefeng/Source2Brain/blob/main/media/source2brain-intro.mp4)** · [字幕](https://github.com/lorinefeng/Source2Brain/blob/main/media/source2brain-intro.srt)
+**[▶ 播放 44 秒介绍](https://github.com/lorinefeng/Source2Brain/blob/main/media/source2brain-intro.mp4)** · [字幕](https://github.com/lorinefeng/Source2Brain/blob/main/media/source2brain-intro.srt)
 
 一个真实案例：小红书刷到一条视频，把链接发进微信，然后什么都不做。常开的电脑把口播转成文字、截好关键画面、存进知识库；当晚一个全新对话，就能带着原视频第 46 秒的出处把它用进新稿子。最后展示它能装进 Codex、Claude Code、Hermes Agent、OpenClaw、WorkBuddy 和 DeepSeek Harness，各自的安装指引见下文。纯配乐，无配音；等待已加速，界面按运行记录重建，视频帧为原图。
 
