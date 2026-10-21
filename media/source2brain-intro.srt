@@ -39,5 +39,9 @@
 背后是一串现成的开源项目。Source2Brain 把它们编成配方，让你自己的 AI 按需去装。
 
 11
-00:00:31,867 --> 00:00:35,583
+00:00:31,867 --> 00:00:37,450
+Codex、Claude Code、Hermes Agent、OpenClaw、WorkBuddy、DeepSeek Harness，它都能装进去。
+
+12
+00:00:37,500 --> 00:00:41,217
 收藏，下次就能用上。github.com/lorinefeng/Source2Brain
